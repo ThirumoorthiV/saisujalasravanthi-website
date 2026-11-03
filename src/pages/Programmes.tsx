@@ -48,7 +48,7 @@ export function ProgrammesOverview() {
                 Explore {cat.name} <ArrowRight size={16} aria-hidden />
               </Link>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {list.map((p) => (
                 <ProgrammeCard key={p.slug} programme={p} />
               ))}
@@ -92,7 +92,7 @@ export function ProgrammeCategoryPage() {
 
       <Section tone="cream">
         <SectionHeading eyebrow={cat.name} title={`${cat.name} programmes`} />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => (
             <ProgrammeCard key={p.slug} programme={p} />
           ))}
@@ -107,7 +107,7 @@ export function ProgrammeCategoryPage() {
       {events.length > 0 && (
         <Section tone="white">
           <SectionHeading eyebrow="Latest updates" title={`${cat.name} events`} />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((e) => (
               <EventCard key={e.slug} event={e} />
             ))}
@@ -118,7 +118,7 @@ export function ProgrammeCategoryPage() {
       {stories.length > 0 && (
         <Section tone="tint">
           <SectionHeading eyebrow="Stories" title={`${cat.name} stories`} />
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
             {stories.map((s) => (
               <StoryCard key={s.slug} story={s} />
             ))}
@@ -155,23 +155,23 @@ export function ProgrammeDetail() {
 
       {/* 1–2. Problem & solution */}
       <Section tone="cream">
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-lg bg-white p-8 ring-1 ring-ink-200">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+          <div className="rounded-lg bg-white p-6 md:p-8 ring-1 ring-ink-200">
             <AlertCircle className="text-maroon-400" aria-hidden />
             <h2 className="mt-3 font-heading text-2xl font-semibold text-maroon-700">The problem</h2>
-            <p className="mt-3 text-[17px] leading-relaxed">{programme.problem}</p>
+            <p className="mt-3 text-base sm:text-[17px] leading-relaxed">{programme.problem}</p>
           </div>
-          <div className="rounded-lg bg-maroon-700 p-8 text-white">
+          <div className="rounded-lg bg-maroon-700 p-6 md:p-8 text-white">
             <Lightbulb className="text-gold-500" aria-hidden />
             <h2 className="mt-3 font-heading text-2xl font-semibold">Our solution</h2>
-            <p className="mt-3 text-[17px] leading-relaxed text-maroon-100">{programme.solution}</p>
+            <p className="mt-3 text-base sm:text-[17px] leading-relaxed text-maroon-100">{programme.solution}</p>
           </div>
         </div>
       </Section>
 
       {/* 3–5. Where, who, services */}
       <Section tone="white">
-        <div className="grid gap-10 md:grid-cols-3">
+        <div className="grid gap-8 md:gap-10 md:grid-cols-3">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-semibold text-maroon-700">
               <MapPin size={20} aria-hidden /> Where we work
@@ -227,7 +227,7 @@ export function ProgrammeDetail() {
       {events.length > 0 && (
         <Section tone="cream">
           <SectionHeading eyebrow="Latest updates" title="Recent and upcoming events" />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((e) => (
               <EventCard key={e.slug} event={e} />
             ))}

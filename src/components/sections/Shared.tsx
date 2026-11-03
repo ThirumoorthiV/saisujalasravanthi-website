@@ -15,7 +15,7 @@ export function ImpactAtAGlance({ tone = "white" }: { tone?: Tone }) {
         intro="Every figure shows its period and the date it was last updated."
         action={{ label: "See impact dashboard", to: "/impact/dashboard/" }}
       />
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {IMPACT_METRICS.slice(0, 4).map((m, i) => (
           <StatBlock key={m.id} metric={m} dark={i % 2 === 1} />
         ))}
@@ -62,7 +62,7 @@ export function GetInvolvedCards({ tone = "tint" }: { tone?: Tone }) {
   return (
     <Section tone={tone}>
       <SectionHeading eyebrow="Get involved" title="Every helping hand counts" align="center" intro="Choose how you'd like to make a difference." />
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {INVOLVE_ACTIONS.map((a) => (
           <MediaCard key={a.title} image={a.image} title={a.title} text={a.text} cta={a.cta} to={a.to} />
         ))}

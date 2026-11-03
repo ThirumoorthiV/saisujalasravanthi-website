@@ -11,7 +11,7 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 export const buttonClass = (variant: Variant = "primary") =>
-  `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500 ${VARIANTS[variant]}`;
+  `inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold sm:min-h-[44px] sm:px-5 sm:py-2.5 sm:text-base transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500 ${VARIANTS[variant]}`;
 
 interface ButtonLinkProps {
   to: string;

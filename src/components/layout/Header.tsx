@@ -127,8 +127,8 @@ export function Header() {
 
   return (
     <header className={`sticky top-0 z-40 bg-cream transition-shadow ${scrolled ? "shadow-md" : ""}`}>
-      <div className="mx-auto flex max-w-content items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6">
-        <Logo className="h-12 sm:h-16" />
+      <div className="mx-auto flex max-w-content items-center gap-2 px-4 py-2 sm:gap-4 sm:px-6">
+        <Logo className="h-10 sm:h-14 lg:h-16" />
         <div className="ml-auto hidden items-center gap-6 text-sm text-ink-600 lg:flex">
           <a href={`mailto:${ENQUIRY_INBOXES["General Enquiries"]}`} className="flex items-center gap-2 hover:text-maroon-700">
             <Mail size={16} className="text-maroon-700" aria-hidden /> {ENQUIRY_INBOXES["General Enquiries"]}
@@ -137,12 +137,12 @@ export function Header() {
             <Phone size={16} className="text-maroon-700" aria-hidden /> {SITE.phones.join(" / ")}
           </span>
         </div>
-        <Link to="/donate/" className={`${buttonClass("primary")} ml-auto lg:ml-0`}>
-          <HeartHandshake size={18} aria-hidden /> Donate
+        <Link to="/donate/" className={`${buttonClass("primary")} ml-auto !min-h-[38px] !px-3 !py-1.5 sm:!min-h-[44px] sm:!px-5 sm:!py-2.5 lg:ml-0`}>
+          <HeartHandshake size={16} aria-hidden /> Donate
         </Link>
         <button
           type="button"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-maroon-700 hover:bg-maroon-100 xl:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-maroon-700 hover:bg-maroon-100 sm:h-11 sm:w-11 xl:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -161,7 +161,7 @@ export function Header() {
       </nav>
 
       {open && (
-        <nav id="mobile-nav" aria-label="Mobile" className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-ink-200 bg-white px-4 py-4 sm:px-6 xl:hidden">
+        <nav id="mobile-nav" aria-label="Mobile" className="max-h-[calc(100dvh-60px)] overflow-y-auto border-t border-ink-200 bg-white px-4 py-4 sm:px-6 xl:hidden">
           <MobileItems items={MAIN_NAV} />
         </nav>
       )}

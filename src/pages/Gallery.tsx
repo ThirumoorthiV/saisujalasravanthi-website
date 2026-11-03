@@ -128,7 +128,7 @@ export default function Gallery() {
           onReset={reset}
           count={list.length}
         />
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((item, i) => (
             <li key={item.id}>
               <button

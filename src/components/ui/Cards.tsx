@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import type { ImpactMetric, Programme, Story, TrustEvent } from "@/types";
 import { getCategory } from "@/data/programmes";
 import { dateBadge, formatDate, formatNumber } from "@/lib/format";
-import { PendingBadge, Tag } from "./Primitives";
+import { Tag } from "./Primitives";
 
 /**
  * Shows the whole photo (object-contain) inside a fixed aspect ratio, over a
@@ -60,9 +60,9 @@ export function MediaCard({ image, imageAlt = "", title, text, meta, children, c
   const body = (
     <>
       <ImageFrame src={image} alt={imageAlt} />
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col p-5 md:p-6">
         {meta && <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-ink-600">{meta}</div>}
-        <Heading className="font-heading text-xl font-semibold leading-snug text-maroon-700">{title}</Heading>
+        <Heading className="font-heading text-lg font-semibold leading-snug text-maroon-700 md:text-xl">{title}</Heading>
         {text && <p className="mt-2 line-clamp-3 text-ink-600">{text}</p>}
         {children}
         {cta && (
@@ -153,20 +153,17 @@ export function EventCard({ event }: { event: TrustEvent }) {
 
 export function StatBlock({ metric, dark = false }: { metric: ImpactMetric; dark?: boolean }) {
   return (
-    <div className={`flex h-full flex-col rounded-xl p-6 ${dark ? "bg-maroon-900" : "bg-maroon-700"} text-white`}>
-      <p className="font-heading text-[40px] font-bold leading-none text-gold-500 md:text-[52px]">
+    <div className={`flex h-full flex-col rounded-xl p-5 md:p-6 ${dark ? "bg-maroon-900" : "bg-maroon-700"} text-white`}>
+      <p className="font-heading text-[36px] font-bold leading-none text-gold-500 md:text-[52px]">
         {metric.prefix}
         {formatNumber(metric.value)}
         {metric.suffix}
       </p>
       <p className="mt-2 text-lg font-semibold">{metric.label}</p>
       <p className="mt-1 text-sm text-maroon-100">{metric.period}</p>
-      <p className="mt-auto flex items-center gap-1 pt-3 text-xs text-maroon-100">
-        <Calendar size={12} aria-hidden /> As of {metric.asOf}
-      </p>
-      {!metric.verified && (
-        <p className="mt-2">
-          <PendingBadge />
+      {!/pending/i.test(metric.asOf) && (
+        <p className="mt-auto flex items-center gap-1 pt-3 text-xs text-maroon-100">
+          <Calendar size={12} aria-hidden /> As of {metric.asOf}
         </p>
       )}
     </div>
@@ -175,15 +172,15 @@ export function StatBlock({ metric, dark = false }: { metric: ImpactMetric; dark
 
 export function MetricDetail({ metric }: { metric: ImpactMetric }) {
   return (
-    <div className="flex h-full flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
+    <div className="flex h-full min-w-0 flex-col rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70 md:p-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="whitespace-nowrap font-heading text-4xl font-bold text-maroon-700">
+        <p className="whitespace-nowrap font-heading text-3xl md:text-4xl font-bold text-maroon-700">
           {metric.prefix}
           {formatNumber(metric.value)}
           {metric.suffix}
         </p>
       </div>
-      <h3 className="mt-2 truncate text-lg font-semibold text-ink-900" title={metric.label}>
+      <h3 className="mt-2 text-lg font-semibold leading-snug text-ink-900 lg:truncate" title={metric.label}>
         {metric.label}
       </h3>
       <div className="mt-3 h-0.5 w-10 bg-gold-500" />

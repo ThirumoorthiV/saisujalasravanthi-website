@@ -81,7 +81,7 @@ export function EventsList() {
           count={list.length}
         />
         {list.length ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((e) => (
               <EventCard key={e.slug} event={e} />
             ))}
@@ -146,7 +146,7 @@ export function EventDetail() {
       </PageHeader>
 
       <Section tone="cream">
-        <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
+        <div className="grid gap-8 md:gap-10 lg:grid-cols-[1fr_340px]">
           <div>
             <div className="flex flex-wrap gap-2">
               <Tag>{event.category}</Tag>
@@ -162,12 +162,12 @@ export function EventDetail() {
             <h2 className="mt-10 flex items-center gap-2 font-heading text-2xl font-semibold text-maroon-700">
               <Target size={22} aria-hidden /> Objective
             </h2>
-            <p className="mt-3 text-[17px] leading-relaxed">{event.objective}</p>
+            <p className="mt-3 text-base sm:text-[17px] leading-relaxed">{event.objective}</p>
 
             <h2 className="mt-8 flex items-center gap-2 font-heading text-2xl font-semibold text-maroon-700">
               <Users size={22} aria-hidden /> Who benefited
             </h2>
-            <p className="mt-3 text-[17px] leading-relaxed">{event.whoBenefited}</p>
+            <p className="mt-3 text-base sm:text-[17px] leading-relaxed">{event.whoBenefited}</p>
 
             <h2 className="mt-8 font-heading text-2xl font-semibold text-maroon-700">Key activities</h2>
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">

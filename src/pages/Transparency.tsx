@@ -47,7 +47,7 @@ export function TransparencyOverview() {
 
       <Section tone="cream">
         <SectionHeading eyebrow="Registration & governance" title="Who we are, on record" />
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
           {[
             { icon: Landmark, title: "Registration details", rows: ["Sri Sathya Sai Sujala Sravanthi Trust", "Established: 2012, Hyderabad", "Registration no.: —", "PAN: —"] },
             { icon: Award, title: "Tax exemptions", rows: ["12A registration: —", "80G registration: —", "CSR-1 registration: —"] },
@@ -73,7 +73,7 @@ export function TransparencyOverview() {
 
       <Section tone="white">
         <SectionHeading eyebrow="Documents" title="Explore our disclosures" align="center" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {SECTIONS.map((s) => (
             <MediaCard key={s.title} image={s.image} title={s.title} text={s.text} cta="Open" to={s.to} />
           ))}
@@ -96,8 +96,8 @@ export function FcraPage() {
         image="/images/free/donation-make-a-change.webp"
       />
       <Section tone="cream">
-        <div className="grid items-start gap-10 lg:grid-cols-[1.2fr_1fr]">
-          <div className="rounded-xl bg-maroon-900 p-6 text-white md:p-8">
+        <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-[1.2fr_1fr]">
+          <div className="rounded-xl bg-maroon-900 p-5 text-white sm:p-6 md:p-8">
             <div className="flex items-center gap-3">
               <Globe2 className="text-gold-500" size={32} aria-hidden />
               <h2 className="font-heading text-2xl font-semibold">Registration & bank account</h2>
@@ -178,7 +178,7 @@ export function PoliciesPage() {
       <Seo title="Policies" description="Privacy Policy, Terms and Conditions and Refund Policy of Sri Sathya Sai Sujala Sravanthi Trust." jsonLd={breadcrumbSchema([ROOT, TRANSPARENCY, crumb])} />
       <PageHeader title="Policies" intro="How we handle your information, the terms of using this website, and our refund policy." crumbs={[ROOT, TRANSPARENCY, crumb]} image="/images/free/helping-hands.webp" />
       <Section tone="cream">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
           {POLICIES.map((p) => (
             <Link
               key={p.slug}

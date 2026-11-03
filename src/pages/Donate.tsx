@@ -72,7 +72,7 @@ export default function Donate() {
 
       <Section tone="cream">
         <SectionHeading eyebrow="Your gift at work" title="What support has already made possible" align="center" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {GIFT_AT_WORK.map((g) => (
             <MediaCard key={g.stat} image={g.image} title={g.stat} text={g.label} cta="Learn more" to={g.to} />
           ))}
@@ -83,7 +83,7 @@ export default function Donate() {
         <SectionHeading eyebrow="How to donate" title="Choose how you'd like to give" align="center" />
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Indian donors */}
-          <div id="indian-donations" className="flex flex-col rounded-2xl bg-maroon-50 p-6 ring-1 ring-ink-200 md:p-8">
+          <div id="indian-donations" className="flex flex-col rounded-2xl bg-maroon-50 p-5 ring-1 ring-ink-200 sm:p-6 md:p-8">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-maroon-700 text-gold-500">
                 <IndianRupee aria-hidden />
@@ -93,7 +93,7 @@ export default function Donate() {
                 <p className="text-sm text-ink-600">Donations to our Indian domestic bank account</p>
               </div>
             </div>
-            <div className="mt-6 grid items-center gap-6 sm:grid-cols-[1fr_auto]">
+            <div className="mt-6 grid items-center gap-4 sm:gap-6 sm:grid-cols-[1fr_auto]">
               <div>
                 <p className="text-ink-900">Give securely online, or scan the QR code with any UPI app.</p>
                 <ButtonLink to={DONATION.domesticUrl} className="mt-5">
@@ -114,7 +114,7 @@ export default function Donate() {
           </div>
 
           {/* FCRA */}
-          <div id="fcra-donations" className="scroll-mt-36 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-ink-200 md:p-8">
+          <div id="fcra-donations" className="scroll-mt-36 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink-200 sm:p-6 md:p-8">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-maroon-700 text-gold-500">
                 <Globe2 aria-hidden />
@@ -159,7 +159,7 @@ export default function Donate() {
 
       <Section tone="tint">
         <SectionHeading eyebrow="Other ways to give" title="More ways to make a difference" align="center" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
             { title: "CSR Partnership", text: "Fund a Sai Swasthya centre, heart surgeries or village sanitation — with 100% transparency in fund utilisation.", to: "/csr-partnerships/", cta: "Explore CSR projects", image: "/images/free/csr-handshake.webp" },
             { title: "Donate Medicines", text: "Pharma companies can give medicines or supply at manufacturing cost through Aushadhalayam.", to: "/programmes/healthcare/aushadhalayam/", cta: "About Aushadhalayam", image: "/images/site/aushadhalayam-pharmacy.webp" },

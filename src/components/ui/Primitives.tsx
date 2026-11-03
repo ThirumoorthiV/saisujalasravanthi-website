@@ -31,7 +31,7 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section id={id} className={`${TONES[tone]} py-16 md:py-20 ${className}`}>
+    <section id={id} className={`${TONES[tone]} py-10 sm:py-14 md:py-20 ${className}`}>
       <div className="mx-auto max-w-content px-4 sm:px-6">{children}</div>
     </section>
   );
@@ -61,16 +61,16 @@ export function SectionHeading({
           {eyebrow}
         </p>
       )}
-      <h2 className={`font-heading text-[26px] font-semibold leading-tight md:text-4xl ${light ? "text-white" : "text-maroon-700"}`}>
+      <h2 className={`font-heading text-2xl font-semibold leading-tight sm:text-[26px] md:text-4xl ${light ? "text-white" : "text-maroon-700"}`}>
         {title}
       </h2>
       <div className={`mt-4 h-0.5 w-16 bg-gold-500 ${centered ? "mx-auto" : ""}`} />
-      {intro && <p className={`mt-4 text-lg ${light ? "text-maroon-100" : "text-ink-600"}`}>{intro}</p>}
+      {intro && <p className={`mt-3 text-base md:mt-4 md:text-lg ${light ? "text-maroon-100" : "text-ink-600"}`}>{intro}</p>}
     </div>
   );
-  if (!action) return <div className="mb-10">{heading}</div>;
+  if (!action) return <div className="mb-8 md:mb-10">{heading}</div>;
   return (
-    <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="mb-8 flex flex-col gap-3 md:mb-10 md:flex-row md:items-end md:justify-between">
       {heading}
       <Link
         to={action.to}
@@ -84,9 +84,9 @@ export function SectionHeading({
 
 export function QuoteBlock({ quote, by }: { quote: string; by: string }) {
   return (
-    <figure className="rounded-r-lg border-l-4 border-maroon-700 bg-gold-100 p-6">
+    <figure className="rounded-r-lg border-l-4 border-maroon-700 bg-gold-100 p-5 md:p-6">
       <Quote className="mb-2 text-maroon-400" size={24} aria-hidden />
-      <blockquote className="font-heading text-xl italic text-ink-900">“{quote}”</blockquote>
+      <blockquote className="font-heading text-lg italic text-ink-900 md:text-xl">“{quote}”</blockquote>
       <figcaption className="mt-3 text-sm font-semibold text-maroon-700">— {by}</figcaption>
     </figure>
   );

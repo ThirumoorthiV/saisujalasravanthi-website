@@ -32,7 +32,7 @@ export default function Contact() {
         image="/images/free/helping-hand-reach.webp"
       />
       <Section tone="cream">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.5fr]">
+        <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-[1fr_1.5fr]">
           <div className="space-y-6">
             <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
               <h2 className="font-heading text-2xl font-semibold text-maroon-700">Hyderabad office</h2>
@@ -88,7 +88,7 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 md:p-8">
+          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70 sm:p-6 md:p-8">
             <h2 className="mb-6 font-heading text-2xl font-semibold text-maroon-700">Send us a message</h2>
             <EnquiryForm formName="contact" schema={contactSchema} fields={contactFields} inbox={ENQUIRY_INBOXES["General Enquiries"]} submitLabel="Send Message" />
           </div>

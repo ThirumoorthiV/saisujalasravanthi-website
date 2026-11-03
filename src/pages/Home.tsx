@@ -37,23 +37,23 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-maroon-700 via-maroon-900 to-maroon-900" aria-hidden />
         <div className="absolute -right-32 top-1/2 h-[520px] w-[520px] -translate-y-1/2 rounded-full border-[40px] border-maroon-600/30" aria-hidden />
         <div className="absolute right-24 top-16 h-40 w-40 rounded-full bg-gold-500/10" aria-hidden />
-        <div className="relative mx-auto grid max-w-content items-center gap-10 px-4 py-20 sm:px-6 md:py-28 lg:grid-cols-[1.4fr_1fr]">
+        <div className="relative mx-auto grid max-w-content items-center gap-8 md:gap-10 px-4 py-12 sm:px-6 sm:py-20 md:py-28 lg:grid-cols-[1.4fr_1fr]">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-4 py-1.5 text-sm font-semibold text-black shadow-sm">
+            <p className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold text-black sm:px-4 sm:py-1.5 sm:text-sm shadow-sm">
               <span className="h-2 w-2 rounded-full bg-maroon-700" aria-hidden /> {SITE.motto} · {SITE.submotto}
             </p>
-            <h1 className="mt-6 font-heading text-[32px] font-bold leading-[1.15] md:text-5xl lg:text-[56px]">
+            <h1 className="mt-5 font-heading text-[28px] font-bold leading-[1.15] sm:mt-6 sm:text-[32px] md:text-5xl lg:text-[56px]">
               Serving Communities.
               <br />
               Transforming Lives.
               <br />
               <span className="text-gold-500">Zero Cost.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-maroon-100">
+            <p className="mt-4 max-w-xl text-base text-maroon-100 sm:mt-6 sm:text-lg">
               Through free healthcare, rural development, education and community outreach, Sai Sujala Sravanthi works to create healthier
               and more empowered communities.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
               <ButtonLink to="/programmes/" variant="light">
                 Explore Our Programmes <ArrowRight size={18} aria-hidden />
               </ButtonLink>
@@ -78,7 +78,7 @@ export default function Home() {
 
       {/* 2. Who we are */}
       <Section tone="cream">
-        <div className="grid items-center gap-10 lg:grid-cols-2">
+        <div className="grid items-center gap-8 md:gap-10 lg:grid-cols-2">
           <div className="grid grid-cols-2 gap-4">
             <ImageFrame src="/images/site/sai-swasthya-centre-2.webp" alt="Opening of a Sai Swasthya wellness centre" aspect="aspect-[16/10]" className="col-span-2 rounded-2xl" />
             <ImageFrame src="/images/site/aushadhalayam-distribution-1.webp" alt="Volunteers distributing free medicines" className="rounded-xl" />
@@ -111,7 +111,7 @@ export default function Home() {
       {/* 3. Core areas */}
       <Section tone="tint">
         <SectionHeading eyebrow="What we do" title="Our core areas" align="center" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {CORE_AREAS.map((a) => (
             <MediaCard key={a.title} image={a.image} title={a.title} text={a.text} cta="Explore" to={a.to} meta={<Tag><Icon name={a.icon} size={14} /> {a.label}</Tag>} />
           ))}
@@ -124,7 +124,7 @@ export default function Home() {
       {/* 5. Featured stories */}
       <Section tone="cream">
         <SectionHeading eyebrow="Stories & updates" title="Stories of change" action={{ label: "Read Our Stories", to: "/stories/" }} />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {stories.map((s) => (
             <StoryCard key={s.slug} story={s} />
           ))}
@@ -134,7 +134,7 @@ export default function Home() {
       {/* 6. Latest events */}
       <Section tone="white">
         <SectionHeading eyebrow="Events" title="Camps, drives & community programmes" action={{ label: "All events", to: "/events/" }} />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((e) => (
             <EventCard key={e.slug} event={e} />
           ))}

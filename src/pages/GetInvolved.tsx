@@ -32,7 +32,7 @@ export function GetInvolvedOverview() {
       />
       <PageHeader title="Get Involved" intro="Every helping hand counts. Choose the way that suits you best." crumbs={[ROOT, INVOLVED]} image="/images/free/volunteer.webp" />
       <Section tone="cream">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {OPTIONS.map((o) => (
             <MediaCard key={o.title} image={o.image} title={o.title} text={o.text} cta={o.cta} to={o.to} />
           ))}
@@ -73,7 +73,7 @@ function FormPage<T extends FieldValues>({
       <Seo title={title} description={intro} jsonLd={breadcrumbSchema([ROOT, INVOLVED, crumb])} />
       <PageHeader title={title} intro={intro} crumbs={[ROOT, INVOLVED, crumb]} image={image} />
       <Section tone="cream">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.5fr]">
+        <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-[1fr_1.5fr]">
           <div className="space-y-6">
             <ImageFrame src={image} alt={imageAlt} className="rounded-xl" />
             <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
@@ -88,7 +88,7 @@ function FormPage<T extends FieldValues>({
             </div>
             {aside}
           </div>
-          <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 md:p-8">
+          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70 sm:p-6 md:p-8">
             <h2 className="mb-6 font-heading text-2xl font-semibold text-maroon-700">Register your interest</h2>
             <EnquiryForm formName={`${slug}_form`} schema={schema} fields={fields} inbox={inbox} submitLabel={submitLabel} />
           </div>

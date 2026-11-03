@@ -95,7 +95,9 @@ export const IMPACT_METRICS: ImpactMetric[] = [
   },
 ];
 
-const EMPTY_YEAR = [
+// SAMPLE year-wise figures for layout and review only — replace with the
+// Trust's confirmed numbers (§11) before launch.
+const YEAR_LABELS = [
   "Patients served",
   "Medical camps",
   "Health screenings",
@@ -103,7 +105,17 @@ const EMPTY_YEAR = [
   "Villages reached",
   "Students supported",
   "CSR projects completed",
-].map((label) => ({ label, value: 0 }));
+  "Volunteers engaged",
+];
 
-export const YEARLY_IMPACT: YearlyImpact[] = [2024, 2025, 2026].map((year) => ({ year, metrics: EMPTY_YEAR }));
-// TODO: year-wise data from the Trust (§11)
+const SAMPLE_YEARS: Record<number, number[]> = {
+  2023: [38500, 96, 12400, 310, 140, 1850, 6, 420],
+  2024: [46200, 118, 15800, 385, 172, 2240, 9, 560],
+  2025: [53900, 134, 19300, 452, 205, 2710, 11, 690],
+  2026: [41800, 102, 14600, 338, 188, 2380, 8, 610],
+};
+
+export const YEARLY_IMPACT: YearlyImpact[] = Object.entries(SAMPLE_YEARS).map(([year, values]) => ({
+  year: Number(year),
+  metrics: YEAR_LABELS.map((label, i) => ({ label, value: values[i] })),
+}));

@@ -65,7 +65,7 @@ export function CsrWhy() {
 
       <Section tone="cream">
         <SectionHeading eyebrow="Why partner with us" title="An implementation partner you can trust" align="center" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {WHY.map(({ icon: I, title, text }) => (
             <div key={title} className="flex h-full gap-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-maroon-100 text-maroon-700">
@@ -103,7 +103,7 @@ export function CsrProjects() {
       <Seo title="CSR Projects" description="Ready-to-fund CSR projects in healthcare, pharma CSR and village water & sanitation." jsonLd={breadcrumbSchema([ROOT, CSR, crumb])} />
       <PageHeader title="CSR Projects" intro="Ready-to-fund projects — budgets shared on request and tailored to your CSR goals." crumbs={[ROOT, CSR, crumb]} image="/images/site/sai-swasthya-centre-1.webp" />
       <Section tone="cream">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           {CSR_PROJECTS.map((p) => (
             <MediaCard key={p.name} image={p.image} imageAlt={p.name} meta={<Tag>{p.theme}</Tag>} title={p.name} text={p.objective} cta="Discuss this project" to="/csr-partnerships/csr-enquiry/">
               <dl className="mt-5 grid gap-3 border-t border-ink-200 pt-5 text-sm sm:grid-cols-2">
@@ -140,11 +140,11 @@ export function CsrImpact() {
       <Seo title="CSR Impact" description="CSR impact reports, annual reports and project reports from Sri Sathya Sai Sujala Sravanthi Trust." jsonLd={breadcrumbSchema([ROOT, CSR, crumb])} />
       <PageHeader title="CSR Impact" intro="Transparent reporting on every CSR rupee invested." crumbs={[ROOT, CSR, crumb]} image="/images/site/aushadhalayam-medicine-stock.webp" />
       <Section tone="cream">
-        <div className="grid items-start gap-10 lg:grid-cols-2">
+        <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-2">
           <div>
             <SectionHeading eyebrow="Pharma CSR in action" title="₹65 lakh of medicines, 800+ beneficiaries" />
             <ImageFrame src="/images/site/aushadhalayam-pharmacy.webp" alt="Pharmacy stocked through pharma CSR" aspect="aspect-[16/10]" className="rounded-xl" />
-            <p className="mt-5 text-[17px] leading-relaxed text-ink-900">
+            <p className="mt-5 text-base sm:text-[17px] leading-relaxed text-ink-900">
               Through Aushadhalayam, pharma CSR has supplied ₹65 lakh of medicines to 5 free-care centres, benefiting 800+ patients and
               facilitating 30 surgeries through cost savings.
             </p>
@@ -168,7 +168,7 @@ export function CsrPartners() {
       <PageHeader title="Our Partners" intro="Organisations that support our work." crumbs={[ROOT, CSR, crumb]} image="/images/free/csr-handshake.webp" />
       <Section tone="cream">
         {partners.length ? (
-          <ul className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-3 lg:grid-cols-4">
             {partners.map((p) => (
               <li key={p.name} className="flex h-full flex-col items-center justify-center rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 transition hover:-translate-y-1 hover:shadow-lg">
                 <div className="flex h-20 w-full items-center justify-center">
@@ -197,7 +197,7 @@ export function CsrEnquiry() {
       <Seo title="CSR Enquiry" description="Request a CSR discussion with Sri Sathya Sai Sujala Sravanthi Trust." jsonLd={breadcrumbSchema([ROOT, CSR, crumb])} />
       <PageHeader title="CSR Enquiry" intro="Tell us about your CSR goals and our partnerships team will respond within two working days." crumbs={[ROOT, CSR, crumb]} image="/images/free/corporate-unity.webp" />
       <Section tone="cream">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.6fr]">
+        <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-[1fr_1.6fr]">
           <div className="space-y-6">
             <ImageFrame src="/images/site/pediatric-heart-screening-niloufer.webp" alt="Pediatric heart screening supported by CSR" className="rounded-xl" />
             <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
@@ -218,7 +218,7 @@ export function CsrEnquiry() {
               </ul>
             </div>
           </div>
-          <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 md:p-8">
+          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70 sm:p-6 md:p-8">
             <h2 className="mb-6 font-heading text-2xl font-semibold text-maroon-700">Request a CSR discussion</h2>
             <EnquiryForm formName="csr_enquiry" schema={csrSchema} fields={csrFields} inbox={ENQUIRY_INBOXES["CSR Partnerships"]} submitLabel="Send CSR Enquiry" />
           </div>

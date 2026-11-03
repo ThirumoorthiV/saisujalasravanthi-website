@@ -89,19 +89,19 @@ export function StoriesList({ page }: { page?: string }) {
               className="group mb-10 grid overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-ink-200/70 transition hover:shadow-lg md:grid-cols-2"
             >
               <ImageFrame src={featured.cover} alt={featured.coverAlt} className="h-full" />
-              <div className="flex flex-col justify-center p-8">
+              <div className="flex flex-col justify-center p-6 md:p-8">
                 <div className="flex flex-wrap items-center gap-2 text-sm text-ink-600">
                   <Tag>{featured.category}</Tag>
                   <time dateTime={featured.publishDate}>{formatDate(featured.publishDate)}</time>
                 </div>
-                <h2 className="mt-4 font-heading text-3xl font-semibold leading-tight text-maroon-700">{featured.title}</h2>
-                <p className="mt-3 text-lg text-ink-600">{featured.excerpt}</p>
+                <h2 className="mt-4 font-heading text-2xl font-semibold leading-tight text-maroon-700 sm:text-3xl">{featured.title}</h2>
+                <p className="mt-3 text-base text-ink-600 sm:text-lg">{featured.excerpt}</p>
                 <span className="mt-6 inline-flex items-center gap-1 font-semibold text-maroon-700">
                   Read story <ArrowRight size={16} aria-hidden className="transition group-hover:translate-x-1" />
                 </span>
               </div>
             </Link>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {rest.map((s) => (
                 <StoryCard key={s.slug} story={s} />
               ))}
@@ -166,7 +166,7 @@ export function StoryDetail() {
           </div>
           <ImageFrame src={story.cover} alt={story.coverAlt} aspect="aspect-[16/9]" className="mt-6 rounded-xl" eager />
 
-          <div className="mt-8 space-y-5 text-[17px] leading-relaxed">
+          <div className="mt-8 space-y-5 text-base sm:text-[17px] leading-relaxed">
             {story.body.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
@@ -181,7 +181,7 @@ export function StoryDetail() {
                   </span>
                   <div>
                     <h2 className="font-heading text-2xl font-semibold text-maroon-700">{title}</h2>
-                    <p className="mt-2 text-[17px] leading-relaxed">{story.change![key]}</p>
+                    <p className="mt-2 text-base sm:text-[17px] leading-relaxed">{story.change![key]}</p>
                   </div>
                 </section>
               ))}
@@ -225,7 +225,7 @@ export function StoryDetail() {
         {related.length > 0 && (
           <div className="mt-16">
             <h2 className="mb-6 font-heading text-2xl font-semibold text-maroon-700">More stories</h2>
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
               {related.map((s) => (
                 <StoryCard key={s.slug} story={s} />
               ))}

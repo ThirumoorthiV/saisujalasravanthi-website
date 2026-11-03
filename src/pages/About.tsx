@@ -29,10 +29,10 @@ export function AboutTrust() {
       />
 
       <Section tone="cream">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="grid items-center gap-8 lg:gap-12 lg:grid-cols-2">
           <div>
             <SectionHeading eyebrow="Our history" title="From clean water to free healthcare" />
-            <div className="space-y-4 text-[17px] leading-relaxed text-ink-900">
+            <div className="space-y-4 text-base sm:text-[17px] leading-relaxed text-ink-900">
               <p>
                 Sri Sathya Sai Sujala Sravanthi Trust was established in 2012 under the guidance of Sri Madhusudan Sai to serve rural and
                 underserved communities. Our early work focused on clean drinking water, sanitation and rural infrastructure.
@@ -54,7 +54,7 @@ export function AboutTrust() {
       </Section>
 
       <section className="bg-maroon-900 text-white">
-        <div className="mx-auto grid max-w-content items-center gap-10 px-4 py-16 sm:px-6 md:grid-cols-[260px_1fr]">
+        <div className="mx-auto grid max-w-content items-center gap-8 md:gap-10 px-4 py-16 sm:px-6 md:grid-cols-[260px_1fr]">
           <ImageFrame
             src="/images/site/sathya-sai-baba.webp"
             alt="Bhagawan Sri Sathya Sai Baba"
@@ -75,7 +75,7 @@ export function AboutTrust() {
 
       <Section tone="tint">
         <SectionHeading eyebrow="How we work" title="Our approach" align="center" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { icon: Users, title: "Community-first", text: "Programmes shaped with and for village communities." },
             { icon: Stethoscope, title: "Preventive healthcare", text: "Catching illness early, close to home." },
@@ -113,7 +113,7 @@ export function VisionMission() {
         image="/images/site/community-women.webp"
       />
       <Section tone="cream">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
           {[
             {
               icon: Eye,
@@ -131,24 +131,24 @@ export function VisionMission() {
               text: "Love · Peace · Truth · Right Conduct · Non-violence. Every service is offered free, regardless of caste, creed, religion or economic status.",
             },
           ].map(({ icon: I, title, text }) => (
-            <div key={title} className="flex h-full flex-col rounded-xl border-t-4 border-maroon-700 bg-white p-8 shadow-sm ring-1 ring-ink-200/70">
+            <div key={title} className="flex h-full flex-col rounded-xl border-t-4 border-maroon-700 bg-white p-6 md:p-8 shadow-sm ring-1 ring-ink-200/70">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-maroon-100 text-maroon-700">
                 <I aria-hidden />
               </span>
               <h2 className="mt-4 font-heading text-2xl font-semibold text-maroon-700">{title}</h2>
-              <p className="mt-3 text-[17px] leading-relaxed text-ink-900">{text}</p>
+              <p className="mt-3 text-base sm:text-[17px] leading-relaxed text-ink-900">{text}</p>
             </div>
           ))}
         </div>
       </Section>
       <Section tone="white">
-        <div className="grid items-center gap-10 md:grid-cols-[240px_1fr]">
+        <div className="grid items-center gap-8 md:gap-10 md:grid-cols-[240px_1fr]">
           <div className="mx-auto flex w-full max-w-[240px] items-center justify-center rounded-2xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
             <img src="/images/brand/one-world-one-family.png" alt="One World One Family Mission logo" className="h-auto w-full" loading="lazy" />
           </div>
           <div>
             <SectionHeading eyebrow="Part of a wider mission" title="One World One Family Mission" />
-            <p className="text-[17px] leading-relaxed text-ink-900">
+            <p className="text-base sm:text-[17px] leading-relaxed text-ink-900">
               The Trust is part of the One World One Family Mission, which fuses service and spirituality with a global reach, and has set up
               institutes of excellence in nutrition, education and healthcare — all offered free of cost.
             </p>
@@ -206,13 +206,13 @@ export function Leadership() {
 
       {/* Founder — content left, photo right */}
       <Section tone="cream">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
+        <div className="grid items-center gap-8 md:gap-10 lg:grid-cols-[1.3fr_1fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-maroon-400">{founder.role}</p>
             <h2 className="mt-2 font-heading text-[32px] font-bold leading-tight text-maroon-700 md:text-5xl">{founder.name}</h2>
             <div className="mt-4 h-0.5 w-16 bg-gold-500" />
-            <p className="mt-6 text-lg leading-relaxed text-ink-900">{founder.bio}</p>
-            <p className="mt-4 text-lg leading-relaxed text-ink-900">
+            <p className="mt-5 text-base leading-relaxed sm:mt-6 sm:text-lg text-ink-900">{founder.bio}</p>
+            <p className="mt-4 text-base leading-relaxed sm:text-lg text-ink-900">
               Guided by the principle of vasudhaiva kutumbakam — One World, One Family — his vision fuses service and spirituality to build
               a world where everyone can live with dignity and purpose.
             </p>
@@ -289,24 +289,24 @@ export function OurNetwork() {
         />
 
         {/* Counts — update with the filters */}
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
           {SUMMARY.map(({ icon: I, label, value }) => (
-            <div key={label} className="flex h-full items-center gap-4 rounded-xl bg-maroon-700 p-5 text-white shadow-sm">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-gold-500">
+            <div key={label} className="flex h-full flex-col items-start gap-3 rounded-xl bg-maroon-700 p-4 text-white shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-gold-500 sm:h-12 sm:w-12">
                 <I aria-hidden />
               </span>
               <div>
-                <p className="font-heading text-3xl font-bold leading-none text-gold-500">{value}</p>
-                <p className="mt-1 text-sm text-maroon-100">{label}</p>
+                <p className="font-heading text-[28px] font-bold leading-none text-gold-500 sm:text-3xl">{value}</p>
+                <p className="mt-1 text-sm leading-snug text-maroon-100">{label}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* State cards */}
-        <h2 className="mt-12 font-heading text-2xl font-semibold text-maroon-700">By state</h2>
+        <h2 className="mt-10 font-heading text-xl font-semibold text-maroon-700 sm:mt-12 sm:text-2xl">By state</h2>
         <div className="mt-2 h-0.5 w-12 bg-gold-500" />
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {states.map((s) => {
             const inState = list.filter((c) => c.state === s);
             const selected = values.state === s;
@@ -316,7 +316,7 @@ export function OurNetwork() {
                 type="button"
                 onClick={() => set("state", selected ? "" : s)}
                 aria-pressed={selected}
-                className={`flex h-full items-start gap-4 rounded-xl p-6 text-left shadow-sm ring-1 transition hover:-translate-y-1 hover:shadow-lg ${
+                className={`flex h-full items-start gap-4 rounded-xl p-5 text-left sm:p-6 shadow-sm ring-1 transition hover:-translate-y-1 hover:shadow-lg ${
                   selected ? "bg-maroon-50 ring-maroon-700" : "bg-white ring-ink-200/70"
                 }`}
               >
@@ -337,10 +337,10 @@ export function OurNetwork() {
         </div>
 
         {/* Centre cards */}
-        <h2 className="mt-12 font-heading text-2xl font-semibold text-maroon-700">Centres</h2>
+        <h2 className="mt-10 font-heading text-xl font-semibold text-maroon-700 sm:mt-12 sm:text-2xl">Centres</h2>
         <div className="mt-2 h-0.5 w-12 bg-gold-500" />
         {list.length ? (
-          <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((c) => (
               <li key={c.name} className="flex h-full flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
                 <p className="mb-3 flex flex-wrap gap-2">
