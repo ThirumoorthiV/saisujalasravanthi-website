@@ -1,0 +1,36 @@
+# 301 redirects from the old site (§4.4). Netlify / Cloudflare Pages format.
+# Old URLs collected from the existing site's navigation and homepage links.
+/aboutus                                          /about-us/                                          301
+/covid19reliefwork                                /about-us/our-journey/                              301
+/covid-19-relief-work.html                        /about-us/our-journey/                              301
+/education-mission                                /programmes/education/                              301
+/educationalactivities                            /programmes/education/girl-child-education/         301
+/educational-activites.html                       /programmes/education/girl-child-education/         301
+/programminglives                                 /programmes/community-empowerment/reprogramming-lives/  301
+/sri-sathya-sai-reprograming-lives.html           /programmes/community-empowerment/reprogramming-lives/  301
+/pediatricheartscreeningcentre                    /programmes/healthcare/pediatric-heart-screening/   301
+/sri-sathya-sai-pediatric-heart-screening-centre.html  /programmes/healthcare/pediatric-heart-screening/  301
+/freemonthlycamp                                  /programmes/healthcare/medical-camps/               301
+/sri-satya-sai-free-monthly-camp.html             /programmes/healthcare/medical-camps/               301
+/saiaarogyamultispecialityhospital                /programmes/healthcare/sai-aarogya-hospital/        301
+/sai-swasthya-well-centers                        /programmes/healthcare/sai-swasthya/                301
+/saiswasthya                                      /programmes/healthcare/sai-swasthya/                301
+/sai-swasthya.html                                /programmes/healthcare/sai-swasthya/                301
+/ruraldevelopment                                 /programmes/rural-development/                      301
+/rural-development.html                           /programmes/rural-development/                      301
+/rualinfrastructure                               /programmes/relief-emergency-support/cyclone-titli-rehabilitation/  301
+/rural-infrastructure.html                        /programmes/relief-emergency-support/cyclone-titli-rehabilitation/  301
+/aushadhalayam                                    /programmes/healthcare/aushadhalayam/               301
+/sri-sathya-sai-aushadhalayam.html                /programmes/healthcare/aushadhalayam/               301
+/surgeriesgapfundingsupport                       /programmes/healthcare/surgery-support/             301
+/surgeries-gap-funding-support.html               /programmes/healthcare/surgery-support/             301
+/csr                                              /csr-partnerships/                                  301
+/fcra-report                                      /transparency/fcra/                                301
+/contactus                                        /contact-us/                                        301
+/donation                                         /donate/                                            301
+/privacypolicy                                    /privacy-policy/                                    301
+/termsandconditions                                /terms-and-conditions/                              301
+/refundpolicy                                      /refund-policy/                                     301
+
+# SPA fallback (remove once pages are pre-rendered)
+/*                                                /index.html                                         200

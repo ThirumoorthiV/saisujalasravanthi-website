@@ -1,0 +1,109 @@
+import type { ImpactMetric, YearlyImpact } from "@/types";
+
+// Single source of truth for every impact figure on the site (§5.10) — the
+// homepage shows the first four. Figures come from the existing website or the
+// review deck; each needs Trust confirmation of period and as-of date.
+const WEBSITE = "Existing website, saisujalasravanthi.in";
+
+export const IMPACT_METRICS: ImpactMetric[] = [
+  {
+    id: "phcs",
+    label: "Sai Swasthya Centres",
+    value: 18,
+    definition: "Sai Swasthya primary health / wellness centres listed in Andhra Pradesh (10) and Telangana (8).",
+    period: "Current",
+    asOf: "Pending confirmation",
+    source: `${WEBSITE} — centre list. Review deck also quotes 22.`,
+    verified: false,
+  },
+  {
+    id: "screenings",
+    label: "Children Screened for Heart Disease",
+    value: 6000,
+    suffix: "+",
+    definition: "Children screened by the Pediatric Heart Screening Centre at Niloufer Hospital.",
+    period: "Cumulative, 4-year partnership",
+    asOf: "Pending confirmation",
+    source: `${WEBSITE} — Pediatric Heart Screening page`,
+    verified: false,
+  },
+  {
+    id: "surgeries",
+    label: "Pediatric Heart Surgeries",
+    value: 150,
+    suffix: "+",
+    definition: "Surgeries performed for children identified through cardiac screening.",
+    period: "Cumulative, 4-year partnership",
+    asOf: "Pending confirmation",
+    source: `${WEBSITE} — Pediatric Heart Screening page`,
+    verified: false,
+  },
+  {
+    id: "outpatients",
+    label: "Outpatients",
+    value: 60000,
+    suffix: "+",
+    definition: "Outpatient consultations across centres and camps.",
+    period: "To be confirmed",
+    asOf: "Pending confirmation",
+    source: "Website review deck (slide 5)",
+    verified: false,
+  },
+  {
+    id: "inpatients",
+    label: "Inpatient Services",
+    value: 1000,
+    suffix: "+",
+    definition: "Inpatient admissions at Sai Aarogya Hospital.",
+    period: "To be confirmed",
+    asOf: "Pending confirmation",
+    source: "Website review deck (slide 5)",
+    verified: false,
+  },
+  {
+    id: "medicines",
+    label: "Worth of Medicines Supplied",
+    value: 65,
+    prefix: "₹",
+    suffix: " lakh",
+    definition: "Medicines supplied free by Aushadhalayam (Pharma Bank) to 5 free-care centres.",
+    period: "Cumulative since launch",
+    asOf: "Pending confirmation",
+    source: `${WEBSITE} — Aushadhalayam page`,
+    verified: false,
+  },
+  {
+    id: "homes",
+    label: "Homes on Underground Drainage",
+    value: 100,
+    suffix: "+",
+    definition: "Homes connected to the permanent underground drainage system in Timmayapalli, Mahbubnagar.",
+    period: "Project total",
+    asOf: "Pending confirmation",
+    source: `${WEBSITE} — Rural Development page`,
+    verified: false,
+  },
+  {
+    id: "families-housed",
+    label: "Families Given Permanent Homes",
+    value: 8,
+    definition: "Families displaced by Cyclone Titli (2018) given permanent homes in Saabakota and Pudilanka, AP.",
+    period: "2018 onwards",
+    asOf: "Pending confirmation",
+    source: `${WEBSITE} — Rural Development page (homepage says 3 houses in Pudilanka)`,
+    verified: false,
+  },
+];
+
+const EMPTY_YEAR = [
+  "Patients served",
+  "Medical camps",
+  "Health screenings",
+  "Surgeries supported",
+  "Villages reached",
+  "Students supported",
+  "CSR projects completed",
+].map((label) => ({ label, value: 0 }));
+
+export const YEARLY_IMPACT: YearlyImpact[] = [2024, 2025, 2026].map((year) => ({ year, metrics: EMPTY_YEAR }));
+// TODO: year-wise data from the Trust (§11)
