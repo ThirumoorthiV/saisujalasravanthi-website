@@ -10,7 +10,6 @@ export const SITE = {
   motto: "Love All Serve All",
   submotto: "Help Ever Hurt Never",
   address: "#8-2-601/P/1, Panchavathi Colony, Road No. 10, Banjara Hills, Hyderabad – 500034",
-  phone: "+91 965 2002 767",
   phones: ["+91 965 2002 767", "+91 630 5167 593"],
   emails: ["info@saisujalasravanthi.in", "saisujalasravanthi@gmail.com"],
   whatsapp: null as string | null, // TODO: confirm if an official WhatsApp exists (§14 Q4)

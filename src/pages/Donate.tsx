@@ -141,9 +141,9 @@ export default function Donate() {
         </div>
 
         <div className="mt-8 flex flex-col items-start gap-4 rounded-2xl bg-maroon-700 p-6 text-white md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-3">
+          <div className="flex min-w-0 flex-1 gap-3">
             <Mail className="mt-1 shrink-0 text-gold-500" aria-hidden />
-            <p>
+            <p className="min-w-0 break-words">
               After your transfer, email the transaction receipt to{" "}
               <a href={`mailto:${DONATION.receiptEmail}`} className="font-semibold text-gold-100 underline">
                 {DONATION.receiptEmail}
@@ -151,7 +151,7 @@ export default function Donate() {
               for acknowledgement and an official receipt.
             </p>
           </div>
-          <ButtonLink to="/transparency/" variant="outline-light">
+          <ButtonLink to="/transparency/" variant="outline-light" className="shrink-0 whitespace-nowrap">
             <FileCheck2 size={18} aria-hidden /> View FCRA Reports
           </ButtonLink>
         </div>

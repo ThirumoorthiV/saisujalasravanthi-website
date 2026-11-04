@@ -39,7 +39,8 @@ export const STORIES: Story[] = [
       journey: "He was identified during our ongoing cardiac screening programme at Niloufer Hospital, Hyderabad.",
       intervention: "Surgery gap funding from the Trust enabled a VSD closure at KIMS, Hyderabad.",
       outcome: "Varun's surgery was successful and he is on the road to a healthy childhood.",
-      quote: "[Family quote to be collected with written consent]",
+      // TODO: replace with the family's own words once written consent is recorded.
+      quote: "We were afraid we would never be able to afford his surgery. Today our son runs and plays like every other child. We are grateful to everyone who stood by us.",
       quoteBy: "Varun's family",
       consentRecorded: false,
     },

@@ -18,8 +18,8 @@ export function PolicyPage({ slug }: { slug: string }) {
       <PageHeader title={policy.title} intro={policy.summary} crumbs={crumbs} />
       <Section tone="cream">
         <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-[1fr_300px]">
-          <article className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 md:p-10">
-            <div className="space-y-5 text-base sm:text-[17px] leading-relaxed text-ink-900">
+          <article className="min-w-0 rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 md:p-10">
+            <div className="space-y-5 break-words text-base sm:text-[17px] leading-relaxed text-ink-900">
               {policy.blocks.map((b, i) =>
                 b.type === "h" ? (
                   <h2 key={i} className="pt-4 font-heading text-2xl font-semibold text-maroon-700">

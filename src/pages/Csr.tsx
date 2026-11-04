@@ -209,11 +209,15 @@ export function CsrEnquiry() {
                     {ENQUIRY_INBOXES["CSR Partnerships"]}
                   </a>
                 </li>
-                <li className="flex items-center gap-3">
-                  <Phone size={18} className="shrink-0 text-maroon-700" aria-hidden />
-                  <a href={`tel:${SITE.phone.replace(/\s/g, "")}`} className="hover:underline">
-                    {SITE.phone}
-                  </a>
+                <li className="flex gap-3">
+                  <Phone size={18} className="mt-0.5 shrink-0 text-maroon-700" aria-hidden />
+                  <span className="flex flex-col gap-1">
+                    {SITE.phones.map((p) => (
+                      <a key={p} href={`tel:${p.replace(/\s/g, "")}`} className="hover:underline">
+                        {p}
+                      </a>
+                    ))}
+                  </span>
                 </li>
               </ul>
             </div>

@@ -209,9 +209,9 @@ export function StoryDetail() {
             </div>
           )}
 
-          <div className="mt-10 rounded-lg bg-maroon-700 p-6 text-white">
+          <div className="mt-10 rounded-lg bg-maroon-700 p-6 text-center text-white">
             <p className="font-heading text-xl font-semibold">Help write the next story of change.</p>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
               <ButtonLink to="/get-involved/" variant="light">
                 Get Involved
               </ButtonLink>
