@@ -67,8 +67,7 @@ function DesktopItem({ item, alignRight }: { item: NavItem; alignRight: boolean 
 }
 
 /** Mobile accordion: sub-menus stay closed until their toggle is tapped. */
-function MobileItem({ item, depth }: { item: NavItem; depth: number }) {
-  const [expanded, setExpanded] = useState(false);
+function MobileItem({ item, depth, expanded, onToggle }: { item: NavItem; depth: number; expanded: boolean; onToggle: () => void }) {
   const panelId = useId();
   return (
     <li className={depth ? "" : "border-b border-ink-200/70 last:border-0"}>
@@ -82,7 +81,7 @@ function MobileItem({ item, depth }: { item: NavItem; depth: number }) {
         {item.children && (
           <button
             type="button"
-            onClick={() => setExpanded((e) => !e)}
+            onClick={onToggle}
             aria-expanded={expanded}
             aria-controls={panelId}
             aria-label={`${expanded ? "Hide" : "Show"} ${item.label} sub-menu`}
@@ -103,12 +102,23 @@ function MobileItem({ item, depth }: { item: NavItem; depth: number }) {
   );
 }
 
+/** One open sub-menu per level — opening another closes the previous one. */
 function MobileItems({ items, depth = 0 }: { items: NavItem[]; depth?: number }) {
+  const [openKey, setOpenKey] = useState<string | null>(null);
   return (
     <ul className={depth ? "mb-3 ml-2 border-l-2 border-gold-500 pl-4" : ""}>
-      {items.map((item) => (
-        <MobileItem key={item.to + item.label} item={item} depth={depth} />
-      ))}
+      {items.map((item) => {
+        const key = item.to + item.label;
+        return (
+          <MobileItem
+            key={key}
+            item={item}
+            depth={depth}
+            expanded={openKey === key}
+            onToggle={() => setOpenKey((k) => (k === key ? null : key))}
+          />
+        );
+      })}
     </ul>
   );
 }
