@@ -62,12 +62,23 @@ needs Web3Forms **Pro**. Without a key, forms show an error asking visitors to e
   required). Used for Get Involved, CSR, Donate and a few page banners where the Trust has no photo yet.
 - Partner logos are shown because they already appear on the existing site — confirm written permission (§5.9).
 
+## SEO and deployment (Vercel)
+
+`npm run build` builds the app, then prerenders every page to static HTML
+(`src/entry-server.tsx` + `scripts/prerender.mjs`) so search engines and social previews see real
+content. It also writes `dist/404.html`, `dist/sitemap.xml` and `dist/robots.txt`.
+
+- **New pages** are found by following links from the homepage — anything linked from the site is
+  prerendered and added to the sitemap automatically. The build fails if a link points to a missing page.
+- **Old-site URLs** are 301-redirected in `vercel.json`. Add new ones there (with and without a
+  trailing slash).
+- **Trailing slashes** are enforced by Vercel (`trailingSlash: true`); canonical URLs always use one.
+- **Share image** for Facebook / LinkedIn / WhatsApp is `public/og-image.jpg` (1200×630).
+- **Domain** — canonical URLs use `https://www.saisujalasravanthi.in` (`SITE.url`). In Vercel, add both
+  the www and bare domain and redirect the bare domain to www.
+- After launch, add the site to Google Search Console and submit `/sitemap.xml`.
+
 ## Before launch (not yet done)
 
-1. **Pre-rendering (§7.5)** — this is currently a client-rendered SPA. Add `vite-react-ssg` (or a
-   prerender step) so every route, event and story ships as static HTML for SEO.
-2. **Headless CMS** — move `src/data/*` collections into Sanity/Strapi/Decap and rebuild on publish.
-3. **Form submissions** — `EnquiryForm` in `src/components/ui/Form.tsx` currently logs and shows a
-   success message. Connect a form service/API and route by inbox; fire GA4 conversion events there.
-4. **Redirects** — complete `public/_redirects` with every old URL.
-5. GA4 + Search Console, XML sitemap, interactive map (react-leaflet) once centre lat/long exist.
+1. **Headless CMS** — move `src/data/*` collections into Sanity/Strapi/Decap and rebuild on publish.
+2. GA4, interactive map (react-leaflet) once centre lat/long exist.

@@ -169,7 +169,7 @@ export function ImpactReports() {
   const reports = REPORTS.filter((r) => r.type === "Annual Report" || r.type === "Impact Report");
   return (
     <>
-      <Seo title="Annual Reports" description="Annual and impact reports of Sri Sathya Sai Sujala Sravanthi Trust." jsonLd={breadcrumbSchema([ROOT, IMPACT, crumb])} />
+      <Seo title="Impact & Annual Reports" description="Annual and impact reports of Sri Sathya Sai Sujala Sravanthi Trust." jsonLd={breadcrumbSchema([ROOT, IMPACT, crumb])} />
       <PageHeader title="Annual Reports" intro="Annual and impact reports, published for every partner and supporter." crumbs={[ROOT, IMPACT, crumb]} image="/images/free/helping-hands.webp" />
       <Section tone="cream">
         <div className="mx-auto max-w-3xl">

@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { Navigate, type RouteObject } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { AboutTrust, Leadership, OurJourney, OurNetwork, VisionMission } from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -16,8 +16,8 @@ import { STORY_PAGES, StoriesList, StoryDetail } from "@/pages/Stories";
 import { AnnualReportsPage, FcraPage, FinancialReportsPage, PoliciesPage, TransparencyOverview } from "@/pages/Transparency";
 
 // URL structure follows §4.4 — every header sub-menu item is its own page.
-// Legacy URLs from the old site should be 301'd at the host (see
-// public/_redirects); the client-side fallbacks below catch any that slip through.
+// Legacy URLs from the old site are 301'd by the host (see vercel.json); the
+// client-side fallbacks below catch any that slip through.
 const LEGACY_URLS: Record<string, string> = {
   aboutus: "/about-us/",
   covid19reliefwork: "/about-us/our-journey/",
@@ -42,7 +42,8 @@ const LEGACY_URLS: Record<string, string> = {
   refundpolicy: "/refund-policy/",
 };
 
-export const router = createBrowserRouter([
+// Shared by the browser router (main.tsx) and the build-time prerender (entry-server.tsx).
+export const routes: RouteObject[] = [
   {
     path: "/",
     element: <Layout />,
@@ -99,4 +100,4 @@ export const router = createBrowserRouter([
       { path: "*", element: <NotFound /> },
     ],
   },
-]);
+];

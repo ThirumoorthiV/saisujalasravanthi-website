@@ -1,8 +1,9 @@
-import { Building2, Compass, Eye, HandHeart, Heart, HeartPulse, MapPin, Quote, Sprout, Stethoscope, Target, Users } from "lucide-react";
+import { Building2, Compass, Eye, HandHeart, Heart, HeartPulse, MapPin, Navigation, Quote, Sprout, Stethoscope, Target, Users } from "lucide-react";
 import { CENTRES, LEADERSHIP, MILESTONES, NETWORK_OTHER_STATES } from "@/data/organisation";
 import { SITE } from "@/data/site";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ImageFrame } from "@/components/ui/Cards";
+import { IndiaMap } from "@/components/ui/IndiaMap";
 import { FilterBar, uniqueOptions } from "@/components/ui/Filters";
 import { PendingBadge, Section, SectionHeading, Tag } from "@/components/ui/Primitives";
 import { useFilters } from "@/hooks/useFilters";
@@ -254,11 +255,21 @@ export function Leadership() {
   );
 }
 
+const directionsUrl = (c: Centre) => {
+  const name = c.name.replace(" — ", " ");
+  const parts = name.includes(c.address) ? [name, c.state] : [name, c.address, c.state];
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.join(", "))}`;
+};
+
 export function OurNetwork() {
   const crumb = { name: "Our Network", path: "/about-us/our-network/" };
   const { values, set, reset } = useFilters(["state", "type"]);
   const list = CENTRES.filter((c) => (!values.state || c.state === values.state) && (!values.type || c.type === values.type));
   const states = [...new Set(list.map((c) => c.state))];
+  // Map counts follow the type filter only, so every state stays selectable.
+  const byType = CENTRES.filter((c) => !values.type || c.type === values.type);
+  const mapCounts = byType.reduce<Record<string, number>>((acc, c) => ({ ...acc, [c.state]: (acc[c.state] ?? 0) + 1 }), {});
+  const mapStates = [...new Set(CENTRES.map((c) => c.state))].filter((s) => s !== "Other");
   const countOf = (type: Centre["type"]) => list.filter((c) => c.type === type).length;
   const SUMMARY = [
     { icon: Building2, label: "Total locations", value: list.length },
@@ -303,59 +314,85 @@ export function OurNetwork() {
           ))}
         </div>
 
-        {/* State cards */}
-        <h2 className="mt-10 font-heading text-xl font-semibold text-maroon-700 sm:mt-12 sm:text-2xl">By state</h2>
-        <div className="mt-2 h-0.5 w-12 bg-gold-500" />
-        <div className="mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {states.map((s) => {
-            const inState = list.filter((c) => c.state === s);
-            const selected = values.state === s;
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => set("state", selected ? "" : s)}
-                aria-pressed={selected}
-                className={`flex h-full items-start gap-4 rounded-xl p-5 text-left sm:p-6 shadow-sm ring-1 transition hover:-translate-y-1 hover:shadow-lg ${
-                  selected ? "bg-maroon-50 ring-maroon-700" : "bg-white ring-ink-200/70"
-                }`}
-              >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-maroon-100 text-maroon-700">
-                  <MapPin aria-hidden />
-                </span>
-                <span className="flex-1">
-                  <span className="block font-heading text-xl font-semibold text-maroon-700">{s}</span>
-                  <span className="mt-1 block text-sm text-ink-600">
-                    {inState.filter((c) => c.type === "Sai Swasthya Centre").length} Sai Swasthya ·{" "}
-                    {inState.filter((c) => c.type !== "Sai Swasthya Centre").length} other
-                  </span>
-                </span>
-                <span className="font-heading text-3xl font-bold text-maroon-700">{inState.length}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Centre cards */}
-        <h2 className="mt-10 font-heading text-xl font-semibold text-maroon-700 sm:mt-12 sm:text-2xl">Centres</h2>
-        <div className="mt-2 h-0.5 w-12 bg-gold-500" />
-        {list.length ? (
-          <ul className="mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((c) => (
-              <li key={c.name} className="flex h-full flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
-                <p className="mb-3 flex flex-wrap gap-2">
-                  <Tag>{c.type}</Tag>
-                </p>
-                <h3 className="font-heading text-lg font-semibold text-maroon-700">{c.name}</h3>
-                <p className="mt-2 flex gap-2 text-sm text-ink-600">
-                  <MapPin size={16} className="mt-0.5 shrink-0 text-maroon-400" aria-hidden /> {c.address}, {c.state}
-                </p>
+        {/* Map + centres */}
+        <div className="mt-10 grid items-start gap-6 sm:mt-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
+          <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-ink-200/70 sm:p-6 lg:sticky lg:top-40">
+            <h2 className="font-heading text-xl font-semibold text-maroon-700 sm:text-2xl">Find us on the map</h2>
+            <p className="mt-1 text-sm text-ink-600">Select a highlighted state to see its centres.</p>
+            <div className="mx-auto mt-4 max-w-[420px]">
+              <IndiaMap counts={mapCounts} network={NETWORK_OTHER_STATES} selected={values.state} onSelect={(s) => set("state", s)} />
+            </div>
+            <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-600">
+              <li className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-sm bg-maroon-700" aria-hidden /> Our centres
               </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-6 rounded-xl bg-white p-10 text-center text-ink-600 ring-1 ring-ink-200">No centres match these filters.</p>
-        )}
+              <li className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-sm bg-gold-500/45" aria-hidden /> Wider Sai Swasthya network
+              </li>
+            </ul>
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-ink-200 pt-4" role="group" aria-label="Choose a state">
+              {[{ name: "", label: "All states", count: Object.values(mapCounts).reduce((a, b) => a + b, 0) }, ...mapStates.map((s) => ({ name: s, label: s, count: mapCounts[s] ?? 0 }))].map((s) => {
+                const on = values.state === s.name;
+                return (
+                  <button
+                    key={s.label}
+                    type="button"
+                    onClick={() => set("state", s.name)}
+                    aria-pressed={on}
+                    className={`inline-flex min-h-[40px] items-center gap-2 rounded-full px-4 text-sm font-semibold ring-1 transition-colors ${
+                      on ? "bg-maroon-700 text-white ring-maroon-700" : "bg-white text-maroon-700 ring-ink-200 hover:bg-maroon-50"
+                    }`}
+                  >
+                    {s.label}
+                    <span className={`rounded-full px-2 text-xs ${on ? "bg-white/20" : "bg-maroon-100"}`}>{s.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div aria-live="polite">
+            {list.length ? (
+              states.map((s) => {
+                const inState = list.filter((c) => c.state === s);
+                return (
+                  <section key={s} className="mb-8 last:mb-0">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <h2 className="font-heading text-xl font-semibold text-maroon-700 sm:text-2xl">{s}</h2>
+                      <p className="shrink-0 text-sm text-ink-600">
+                        {inState.length} {inState.length === 1 ? "centre" : "centres"}
+                      </p>
+                    </div>
+                    <div className="mt-2 h-0.5 w-12 bg-gold-500" />
+                    <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+                      {inState.map((c) => (
+                        <li key={c.name} className="flex h-full flex-col rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70">
+                          <p className="mb-3 flex flex-wrap gap-2">
+                            <Tag>{c.type}</Tag>
+                          </p>
+                          <h3 className="font-heading text-lg font-semibold text-maroon-700">{c.name}</h3>
+                          <p className="mt-2 flex gap-2 text-sm text-ink-600">
+                            <MapPin size={16} className="mt-0.5 shrink-0 text-maroon-400" aria-hidden /> {c.address}, {c.state}
+                          </p>
+                          <a
+                            href={directionsUrl(c)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-maroon-700 hover:underline"
+                          >
+                            <Navigation size={14} aria-hidden /> Get directions<span className="sr-only"> to {c.name} (opens Google Maps)</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })
+            ) : (
+              <p className="rounded-xl bg-white p-10 text-center text-ink-600 ring-1 ring-ink-200">No centres match these filters.</p>
+            )}
+          </div>
+        </div>
         <p className="mt-8 rounded-xl bg-gold-100 p-4 text-sm text-ink-900">
           The wider Sai Swasthya network also serves {NETWORK_OTHER_STATES.join(", ")}. Full addresses for each centre are being confirmed
           with the Trust.

@@ -1,5 +1,265 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "trailingSlash": true,
+  "redirects": [
+    {
+      "source": "/aboutus",
+      "destination": "/about-us/",
+      "permanent": true
+    },
+    {
+      "source": "/aboutus/",
+      "destination": "/about-us/",
+      "permanent": true
+    },
+    {
+      "source": "/covid19reliefwork",
+      "destination": "/about-us/our-journey/",
+      "permanent": true
+    },
+    {
+      "source": "/covid19reliefwork/",
+      "destination": "/about-us/our-journey/",
+      "permanent": true
+    },
+    {
+      "source": "/covid-19-relief-work.html",
+      "destination": "/about-us/our-journey/",
+      "permanent": true
+    },
+    {
+      "source": "/education-mission",
+      "destination": "/programmes/education/",
+      "permanent": true
+    },
+    {
+      "source": "/education-mission/",
+      "destination": "/programmes/education/",
+      "permanent": true
+    },
+    {
+      "source": "/educationalactivities",
+      "destination": "/programmes/education/girl-child-education/",
+      "permanent": true
+    },
+    {
+      "source": "/educationalactivities/",
+      "destination": "/programmes/education/girl-child-education/",
+      "permanent": true
+    },
+    {
+      "source": "/educational-activites.html",
+      "destination": "/programmes/education/girl-child-education/",
+      "permanent": true
+    },
+    {
+      "source": "/programminglives",
+      "destination": "/programmes/community-empowerment/reprogramming-lives/",
+      "permanent": true
+    },
+    {
+      "source": "/programminglives/",
+      "destination": "/programmes/community-empowerment/reprogramming-lives/",
+      "permanent": true
+    },
+    {
+      "source": "/sri-sathya-sai-reprograming-lives.html",
+      "destination": "/programmes/community-empowerment/reprogramming-lives/",
+      "permanent": true
+    },
+    {
+      "source": "/pediatricheartscreeningcentre",
+      "destination": "/programmes/healthcare/pediatric-heart-screening/",
+      "permanent": true
+    },
+    {
+      "source": "/pediatricheartscreeningcentre/",
+      "destination": "/programmes/healthcare/pediatric-heart-screening/",
+      "permanent": true
+    },
+    {
+      "source": "/sri-sathya-sai-pediatric-heart-screening-centre.html",
+      "destination": "/programmes/healthcare/pediatric-heart-screening/",
+      "permanent": true
+    },
+    {
+      "source": "/freemonthlycamp",
+      "destination": "/programmes/healthcare/medical-camps/",
+      "permanent": true
+    },
+    {
+      "source": "/freemonthlycamp/",
+      "destination": "/programmes/healthcare/medical-camps/",
+      "permanent": true
+    },
+    {
+      "source": "/sri-satya-sai-free-monthly-camp.html",
+      "destination": "/programmes/healthcare/medical-camps/",
+      "permanent": true
+    },
+    {
+      "source": "/saiaarogyamultispecialityhospital",
+      "destination": "/programmes/healthcare/sai-aarogya-hospital/",
+      "permanent": true
+    },
+    {
+      "source": "/saiaarogyamultispecialityhospital/",
+      "destination": "/programmes/healthcare/sai-aarogya-hospital/",
+      "permanent": true
+    },
+    {
+      "source": "/sai-swasthya-well-centers",
+      "destination": "/programmes/healthcare/sai-swasthya/",
+      "permanent": true
+    },
+    {
+      "source": "/sai-swasthya-well-centers/",
+      "destination": "/programmes/healthcare/sai-swasthya/",
+      "permanent": true
+    },
+    {
+      "source": "/saiswasthya",
+      "destination": "/programmes/healthcare/sai-swasthya/",
+      "permanent": true
+    },
+    {
+      "source": "/saiswasthya/",
+      "destination": "/programmes/healthcare/sai-swasthya/",
+      "permanent": true
+    },
+    {
+      "source": "/sai-swasthya.html",
+      "destination": "/programmes/healthcare/sai-swasthya/",
+      "permanent": true
+    },
+    {
+      "source": "/ruraldevelopment",
+      "destination": "/programmes/rural-development/",
+      "permanent": true
+    },
+    {
+      "source": "/ruraldevelopment/",
+      "destination": "/programmes/rural-development/",
+      "permanent": true
+    },
+    {
+      "source": "/rural-development.html",
+      "destination": "/programmes/rural-development/",
+      "permanent": true
+    },
+    {
+      "source": "/rualinfrastructure",
+      "destination": "/programmes/relief-emergency-support/cyclone-titli-rehabilitation/",
+      "permanent": true
+    },
+    {
+      "source": "/rualinfrastructure/",
+      "destination": "/programmes/relief-emergency-support/cyclone-titli-rehabilitation/",
+      "permanent": true
+    },
+    {
+      "source": "/rural-infrastructure.html",
+      "destination": "/programmes/relief-emergency-support/cyclone-titli-rehabilitation/",
+      "permanent": true
+    },
+    {
+      "source": "/aushadhalayam",
+      "destination": "/programmes/healthcare/aushadhalayam/",
+      "permanent": true
+    },
+    {
+      "source": "/aushadhalayam/",
+      "destination": "/programmes/healthcare/aushadhalayam/",
+      "permanent": true
+    },
+    {
+      "source": "/sri-sathya-sai-aushadhalayam.html",
+      "destination": "/programmes/healthcare/aushadhalayam/",
+      "permanent": true
+    },
+    {
+      "source": "/surgeriesgapfundingsupport",
+      "destination": "/programmes/healthcare/surgery-support/",
+      "permanent": true
+    },
+    {
+      "source": "/surgeriesgapfundingsupport/",
+      "destination": "/programmes/healthcare/surgery-support/",
+      "permanent": true
+    },
+    {
+      "source": "/surgeries-gap-funding-support.html",
+      "destination": "/programmes/healthcare/surgery-support/",
+      "permanent": true
+    },
+    {
+      "source": "/csr",
+      "destination": "/csr-partnerships/",
+      "permanent": true
+    },
+    {
+      "source": "/csr/",
+      "destination": "/csr-partnerships/",
+      "permanent": true
+    },
+    {
+      "source": "/fcra-report",
+      "destination": "/transparency/fcra/",
+      "permanent": true
+    },
+    {
+      "source": "/fcra-report/",
+      "destination": "/transparency/fcra/",
+      "permanent": true
+    },
+    {
+      "source": "/contactus",
+      "destination": "/contact-us/",
+      "permanent": true
+    },
+    {
+      "source": "/contactus/",
+      "destination": "/contact-us/",
+      "permanent": true
+    },
+    {
+      "source": "/donation",
+      "destination": "/donate/",
+      "permanent": true
+    },
+    {
+      "source": "/donation/",
+      "destination": "/donate/",
+      "permanent": true
+    },
+    {
+      "source": "/privacypolicy",
+      "destination": "/privacy-policy/",
+      "permanent": true
+    },
+    {
+      "source": "/privacypolicy/",
+      "destination": "/privacy-policy/",
+      "permanent": true
+    },
+    {
+      "source": "/termsandconditions",
+      "destination": "/terms-and-conditions/",
+      "permanent": true
+    },
+    {
+      "source": "/termsandconditions/",
+      "destination": "/terms-and-conditions/",
+      "permanent": true
+    },
+    {
+      "source": "/refundpolicy",
+      "destination": "/refund-policy/",
+      "permanent": true
+    },
+    {
+      "source": "/refundpolicy/",
+      "destination": "/refund-policy/",
+      "permanent": true
+    }
   ]
 }
