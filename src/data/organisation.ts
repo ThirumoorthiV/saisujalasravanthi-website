@@ -3,12 +3,43 @@ import type { Centre, CsrProject, GalleryItem, Leader, Partner, Report } from "@
 // Leadership, centres, projects and reports sourced from the existing website
 // (saisujalasravanthi.in). Items marked TODO still need Trust input (§11).
 
+// Order is display order within each group.
 export const LEADERSHIP: Leader[] = [
   {
     name: "Sri Madhusudan Sai",
     photo: "/images/leaders/sri-madhusudan-sai.webp",
     role: "Founder & Guiding Light",
     bio: "Under whose guidance the Trust was established in 2012. The One World One Family Mission he leads has set up institutes of excellence in nutrition, education and healthcare — all offered free of cost.",
+  },
+  {
+    name: "Rayavarapu Kondala Rao",
+    photo: "/images/leaders/rayavarapu-kondala-rao.webp",
+    role: "Board of Trustees",
+    bio: "Retired Engineer-in-Chief, Panchayat Raj & Rural Water Supply (1998); led the Sri Sathya Sai Water Supply Projects in Anantapur, Medak, Mahbubnagar and West Godavari.",
+  },
+  {
+    name: "R. Venkateswara Rao",
+    photo: "/images/leaders/r-venkateswara-rao.webp",
+    role: "Board of Trustees",
+    bio: "Retired Engineer-in-Chief, Panchayat Raj Engineering Dept. after 39 years of service; Technical Advisor to APMSIDC for 16 new medical colleges.",
+  },
+  {
+    name: "Veeramachaneni SivaPrasad",
+    photo: "/images/leaders/veeramachaneni-sivaprasad.webp",
+    role: "Board of Trustees",
+    bio: "Founder of Saiteja Constructions; funds free schools and hostels.",
+  },
+  {
+    name: "Kalyan Chakravarthy Konduri",
+    photo: "/images/leaders/kalyan-chakravarthy-konduri.webp",
+    role: "Board of Trustees",
+    bio: "Co-Founder and Executive Director, TechAcme Services Pvt Ltd; associated with the mission for 20 years.",
+  },
+  {
+    name: "G. Dharma Data",
+    photo: "/images/leaders/g-dharma-data.webp",
+    role: "Board of Trustees",
+    bio: "Retired Director (FAC), Drugs Control Administration, Andhra Pradesh; now Adjunct Professor and Regulatory Advisor.",
   },
   {
     name: "Hari Umakanta Rao",
@@ -22,37 +53,7 @@ export const LEADERSHIP: Leader[] = [
     role: "Advisory Council",
     bio: "Founder and Managing Director of Pulse Pharmaceuticals (est. 1997), with over 40 years in the pharmaceutical industry.",
   },
-  {
-    name: "G. Dharma Data",
-    photo: "/images/leaders/g-dharma-data.webp",
-    role: "Advisory Council",
-    bio: "Retired Director (FAC), Drugs Control Administration, Andhra Pradesh; now Adjunct Professor and Regulatory Advisor.",
-  },
-  {
-    name: "Kalyan Chakravarthy Konduri",
-    photo: "/images/leaders/kalyan-chakravarthy-konduri.webp",
-    role: "Advisory Council",
-    bio: "Co-Founder and Executive Director, TechAcme Services Pvt Ltd; associated with the mission for 20 years.",
-  },
-  {
-    name: "Veeramachaneni SivaPrasad",
-    photo: "/images/leaders/veeramachaneni-sivaprasad.webp",
-    role: "Advisory Council",
-    bio: "Founder of Saiteja Constructions; funds free schools and hostels.",
-  },
-  {
-    name: "R. Venkateswara Rao",
-    photo: "/images/leaders/r-venkateswara-rao.webp",
-    role: "Advisory Council",
-    bio: "Retired Engineer-in-Chief, Panchayat Raj Engineering Dept. after 39 years of service; Technical Advisor to APMSIDC for 16 new medical colleges.",
-  },
-  {
-    name: "Rayavarapu Kondala Rao",
-    photo: "/images/leaders/rayavarapu-kondala-rao.webp",
-    role: "Advisory Council",
-    bio: "Retired Engineer-in-Chief, Panchayat Raj & Rural Water Supply (1998); led the Sri Sathya Sai Water Supply Projects in Anantapur, Medak, Mahbubnagar and West Godavari.",
-  },
-]; // TODO: Board of Trustees (heading exists on the old site but names are not listed)
+];
 
 export const MILESTONES = [
   { year: "2012", title: "Trust established", text: "Sri Sathya Sai Sujala Sravanthi Trust founded in Hyderabad under the guidance of Sri Madhusudan Sai, starting with clean drinking water, sanitation and rural infrastructure." },

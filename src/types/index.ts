@@ -163,7 +163,7 @@ export interface Report {
 
 export interface Leader {
   name: string;
-  role: string;
+  role: "Founder & Guiding Light" | "Board of Trustees" | "Advisory Council";
   bio: string;
   photo: string;
 }

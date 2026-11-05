@@ -5,9 +5,9 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { ImageFrame } from "@/components/ui/Cards";
 import { IndiaMap } from "@/components/ui/IndiaMap";
 import { FilterBar, uniqueOptions } from "@/components/ui/Filters";
-import { PendingBadge, Section, SectionHeading, Tag } from "@/components/ui/Primitives";
+import { Section, SectionHeading, Tag } from "@/components/ui/Primitives";
 import { useFilters } from "@/hooks/useFilters";
-import type { Centre } from "@/types";
+import type { Centre, Leader } from "@/types";
 import { GetInvolvedCards } from "@/components/sections/Shared";
 import { breadcrumbSchema, Seo } from "@/lib/seo";
 
@@ -193,12 +193,30 @@ export function OurJourney() {
   );
 }
 
+function LeaderCard({ leader }: { leader: Leader }) {
+  return (
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-ink-200/70 transition hover:-translate-y-1 hover:shadow-lg">
+      <ImageFrame src={leader.photo} alt={leader.name} aspect="aspect-square" />
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="font-heading text-xl font-semibold leading-snug text-maroon-700">{leader.name}</h3>
+        <p className="mt-2 text-ink-600">{leader.bio}</p>
+      </div>
+    </article>
+  );
+}
+
 export function Leadership() {
   const crumb = { name: "Leadership", path: "/about-us/leadership/" };
-  const [founder, ...council] = LEADERSHIP;
+  const founder = LEADERSHIP.find((l) => l.role === "Founder & Guiding Light")!;
+  const trustees = LEADERSHIP.filter((l) => l.role === "Board of Trustees");
+  const council = LEADERSHIP.filter((l) => l.role === "Advisory Council");
   return (
     <>
-      <Seo title="Leadership & Advisory Council" description="Meet the founder and Advisory Council who guide Sri Sathya Sai Sujala Sravanthi Trust." jsonLd={breadcrumbSchema([ROOT, ABOUT, crumb])} />
+      <Seo
+        title="Leadership, Trustees & Advisory Council"
+        description="Meet the founder, Board of Trustees and Advisory Council who guide Sri Sathya Sai Sujala Sravanthi Trust."
+        jsonLd={breadcrumbSchema([ROOT, ABOUT, crumb])}
+      />
       <PageHeader
         title="Leadership & Advisory Council"
         intro="Experienced engineers, pharma leaders, regulators and entrepreneurs who guide our work."
@@ -228,28 +246,28 @@ export function Leadership() {
         </div>
       </Section>
 
-      {/* Advisory Council */}
+      {/* Board of Trustees */}
       <Section tone="white">
-        <SectionHeading eyebrow="Advisory Council" title="The people who guide our work" align="center" />
+        <SectionHeading eyebrow="Board of Trustees" title="Stewards of the Trust" align="center" />
         <ul className="flex flex-wrap justify-center gap-6">
-          {council.map((l) => (
-            <li key={l.name} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
-              <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-ink-200/70 transition hover:-translate-y-1 hover:shadow-lg">
-                <ImageFrame src={l.photo} alt={l.name} aspect="aspect-square" />
-                <div className="flex flex-1 flex-col p-6">
-                  <p className="mb-3">
-                    <Tag>{l.role}</Tag>
-                  </p>
-                  <h3 className="font-heading text-xl font-semibold leading-snug text-maroon-700">{l.name}</h3>
-                  <p className="mt-2 text-ink-600">{l.bio}</p>
-                </div>
-              </article>
+          {trustees.map((l) => (
+            <li key={l.name} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
+              <LeaderCard leader={l} />
             </li>
           ))}
         </ul>
-        <p className="mt-10 text-center text-sm text-ink-600">
-          Board of Trustees <PendingBadge>details awaited from the Trust</PendingBadge>
-        </p>
+      </Section>
+
+      {/* Advisory Council */}
+      <Section tone="cream">
+        <SectionHeading eyebrow="Advisory Council" title="Expertise that guides our work" align="center" />
+        <ul className="flex flex-wrap justify-center gap-6">
+          {council.map((l) => (
+            <li key={l.name} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
+              <LeaderCard leader={l} />
+            </li>
+          ))}
+        </ul>
       </Section>
     </>
   );
