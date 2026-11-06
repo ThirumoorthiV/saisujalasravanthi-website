@@ -108,14 +108,19 @@ const YEAR_LABELS = [
   "Volunteers engaged",
 ];
 
+// Each metric follows its own pattern so the trends read differently.
 const SAMPLE_YEARS: Record<number, number[]> = {
   2023: [38500, 96, 12400, 310, 140, 1850, 6, 420],
-  2024: [46200, 118, 15800, 385, 172, 2240, 9, 560],
-  2025: [53900, 134, 19300, 452, 205, 2710, 11, 690],
-  2026: [41800, 102, 14600, 338, 188, 2380, 8, 610],
+  2024: [46200, 118, 13100, 385, 205, 1920, 9, 560],
+  2025: [53900, 112, 19300, 452, 228, 2710, 7, 690],
+  2026: [41800, 94, 16200, 338, 236, 2380, 8, 610],
 };
+
+/** Years still in progress — shown as year-to-date and never compared with a full year. */
+const PARTIAL_YEARS = new Set([2026]);
 
 export const YEARLY_IMPACT: YearlyImpact[] = Object.entries(SAMPLE_YEARS).map(([year, values]) => ({
   year: Number(year),
+  partial: PARTIAL_YEARS.has(Number(year)),
   metrics: YEAR_LABELS.map((label, i) => ({ label, value: values[i] })),
 }));

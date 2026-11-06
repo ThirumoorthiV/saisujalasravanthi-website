@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { MapPin } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { IMPACT_METRICS, YEARLY_IMPACT } from "@/data/impact";
 import { CENTRES, NETWORK_OTHER_STATES, REPORTS } from "@/data/organisation";
 import { STORIES } from "@/data/stories";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MetricDetail, StoryCard } from "@/components/ui/Cards";
+import { GrowthBars, ImpactTable, seriesFor, Sparkline, TrendChart } from "@/components/ui/ImpactCharts";
 import { Section, SectionHeading } from "@/components/ui/Primitives";
 import { ReportList } from "@/components/ui/ReportList";
 import { CsrBand } from "@/components/sections/Shared";
@@ -50,24 +51,46 @@ export function ImpactGlance() {
   );
 }
 
+const HERO = "Patients served";
+const HEALTH_TILES = ["Medical camps", "Health screenings", "Surgeries supported"];
+const REACH = ["Villages reached", "Students supported", "Volunteers engaged", "CSR projects completed"];
+
 export function ImpactDashboard() {
   // "all" shows totals across every year; picking a year narrows to that year.
   const [year, setYear] = useState<number | "all">("all");
-  const first = YEARLY_IMPACT[0].year;
-  const last = YEARLY_IMPACT[YEARLY_IMPACT.length - 1].year;
-  const metrics =
-    year === "all"
-      ? YEARLY_IMPACT[0].metrics.map((m, i) => ({ label: m.label, value: YEARLY_IMPACT.reduce((sum, y) => sum + y.metrics[i].value, 0) }))
-      : YEARLY_IMPACT.find((y) => y.year === year)!.metrics;
-  const prevData = year === "all" ? undefined : YEARLY_IMPACT.find((y) => y.year === year - 1);
-  // The current calendar year is still in progress, so don't compare it with a full year.
-  const partial = year === new Date().getFullYear();
-  const periodLabel = year === "all" ? `All years · ${first}–${last}` : partial ? `${year} · year to date` : `Calendar year ${year}`;
+  const first = YEARLY_IMPACT[0];
+  const last = YEARLY_IMPACT[YEARLY_IMPACT.length - 1];
+  const fullYears = YEARLY_IMPACT.filter((y) => !y.partial);
+  const lastFull = fullYears[fullYears.length - 1];
+  const current = year === "all" ? undefined : YEARLY_IMPACT.find((y) => y.year === year)!;
+  const prev = current && !current.partial ? YEARLY_IMPACT.find((y) => y.year === current.year - 1) : undefined;
+  const periodLabel = !current ? `Total · ${first.year}–${last.year}` : current.partial ? `${current.year} · year to date` : `Calendar year ${current.year}`;
   const tabs: (number | "all")[] = ["all", ...YEARLY_IMPACT.map((y) => y.year)];
   const crumb = { name: "Impact Dashboard", path: "/impact/dashboard/" };
+
+  const valueOf = (label: string) => {
+    const series = seriesFor(YEARLY_IMPACT, label);
+    return current ? series.find((p) => p.year === current.year)!.value : series.reduce((sum, p) => sum + p.value, 0);
+  };
+  // Change vs the previous full year; none under "All" or for a year in progress.
+  const changeOf = (label: string) => {
+    if (!prev) return null;
+    const before = seriesFor([prev], label)[0].value;
+    return Math.round(((valueOf(label) - before) / before) * 100);
+  };
+  const Change = ({ label }: { label: string }) => {
+    const c = changeOf(label);
+    if (c === null) return null;
+    return (
+      <p className={`text-sm font-semibold ${c >= 0 ? "text-success" : "text-error"}`}>
+        <span aria-hidden>{c >= 0 ? "▲" : "▼"}</span> {Math.abs(c)}% <span className="font-normal text-ink-600">vs {prev!.year}</span>
+      </p>
+    );
+  };
+
   return (
     <>
-      <Seo title="Impact Dashboard" description={`Year-wise outcomes of Sai Sujala Sravanthi's programmes from ${YEARLY_IMPACT[0].year} to ${YEARLY_IMPACT[YEARLY_IMPACT.length - 1].year}.`} jsonLd={breadcrumbSchema([ROOT, IMPACT, crumb])} />
+      <Seo title="Impact Dashboard" description={`Year-wise outcomes of Sai Sujala Sravanthi's programmes from ${first.year} to ${last.year}.`} jsonLd={breadcrumbSchema([ROOT, IMPACT, crumb])} />
       <PageHeader
         title="Impact Dashboard"
         intro="Year-wise outcomes across our programmes."
@@ -75,52 +98,109 @@ export function ImpactDashboard() {
         image="/images/site/outreach-camp-consultations.webp"
       />
       <Section tone="cream">
-        <div>
-          <SectionHeading eyebrow="Year-wise data" title={year === "all" ? `Outcomes ${first}–${last}` : `Outcomes in ${year}`} />
-          <div role="tablist" aria-label="Year" className="mb-8 inline-flex rounded-lg bg-white p-1 ring-1 ring-ink-200">
-            {tabs.map((t) => (
-              <button
-                key={t}
-                role="tab"
-                aria-selected={year === t}
-                onClick={() => setYear(t)}
-                className={`min-h-[40px] rounded-md px-3 text-sm font-semibold transition sm:min-h-[44px] sm:px-5 sm:text-base ${year === t ? "bg-maroon-700 text-white" : "text-maroon-700 hover:bg-maroon-50"}`}
-              >
-                {t === "all" ? "All" : t}
-              </button>
-            ))}
-          </div>
+        <SectionHeading eyebrow="Year-wise data" title={current ? `Outcomes in ${current.year}` : `Outcomes ${first.year}–${last.year}`} />
+        <div role="tablist" aria-label="Year" className="mb-8 inline-flex max-w-full overflow-x-auto rounded-lg bg-white p-1 ring-1 ring-ink-200">
+          {tabs.map((t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={year === t}
+              onClick={() => setYear(t)}
+              className={`min-h-[40px] shrink-0 rounded-md px-3 text-sm font-semibold transition sm:min-h-[44px] sm:px-5 sm:text-base ${year === t ? "bg-maroon-700 text-white" : "text-maroon-700 hover:bg-maroon-50"}`}
+            >
+              {t === "all" ? "All" : t}
+            </button>
+          ))}
         </div>
-        <div role="tabpanel" className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-          {metrics.map((m, i) => {
-            const prev = prevData?.metrics[i]?.value;
-            const change = prev && !partial ? Math.round(((m.value - prev) / prev) * 100) : null;
-            const max = Math.max(...YEARLY_IMPACT.map((y) => y.metrics[i].value));
-            return (
-              <div key={m.label} className="flex h-full flex-col rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70 md:p-6">
-                <p className="font-heading text-3xl font-bold text-maroon-700 md:text-4xl">{formatNumber(m.value)}</p>
-                <p className="mt-1 font-semibold">{m.label}</p>
-                <p className="mt-1 text-xs text-ink-600">{periodLabel}</p>
-                {change !== null && (
-                  <p className={`mt-2 text-sm font-semibold ${change >= 0 ? "text-success" : "text-error"}`}>
-                    {change >= 0 ? "▲" : "▼"} {Math.abs(change)}% vs {prevData!.year}
-                  </p>
-                )}
-                {/* Trend across all years; the selected year is highlighted (all of them under "All") */}
-                <div className="mt-auto flex h-24 items-end gap-1.5 pt-4" aria-hidden>
-                  {YEARLY_IMPACT.map((y) => (
-                    <div key={y.year} className="flex flex-1 flex-col items-center gap-1">
-                      <div
-                        className={`w-full rounded-t ${year === "all" || y.year === year ? "bg-maroon-700" : "bg-maroon-100"}`}
-                        style={{ height: `${Math.max(8, (y.metrics[i].value / max) * 60)}px` }}
-                      />
-                      <span className="text-[10px] text-ink-600">{String(y.year).slice(2)}</span>
-                    </div>
-                  ))}
+
+        <div role="tabpanel" className="space-y-6">
+          {/* Headline: patients served with its full trend */}
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+            <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70 md:p-6 lg:col-span-2">
+              <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+                <div>
+                  <p className="font-semibold text-ink-900">{HERO}</p>
+                  <p className="mt-1 font-heading text-5xl font-bold leading-none text-maroon-700 md:text-6xl">{formatNumber(valueOf(HERO))}</p>
+                  <p className="mt-2 text-xs text-ink-600">{periodLabel}</p>
+                </div>
+                <Change label={HERO} />
+              </div>
+              <div className="mt-4">
+                <div className="sm:hidden">
+                  <TrendChart points={seriesFor(YEARLY_IMPACT, HERO)} selected={year} label={HERO} width={340} />
+                </div>
+                <div className="hidden sm:block">
+                  <TrendChart points={seriesFor(YEARLY_IMPACT, HERO)} selected={year} label={HERO} />
                 </div>
               </div>
-            );
-          })}
+            </div>
+
+            {/* Healthcare stat tiles */}
+            <ul className="grid gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-1 lg:gap-4">
+              {HEALTH_TILES.map((label) => (
+                <li key={label} className="flex flex-col justify-between gap-3 rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70">
+                  <div>
+                    <p className="font-semibold text-ink-900">{label}</p>
+                    <p className="mt-0.5 text-xs text-ink-600">{periodLabel}</p>
+                  </div>
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <p className="font-heading text-3xl font-bold leading-none text-maroon-700">{formatNumber(valueOf(label))}</p>
+                      <div className="mt-2 min-h-[20px]">
+                        <Change label={label} />
+                      </div>
+                    </div>
+                    <Sparkline points={seriesFor(YEARLY_IMPACT, label)} selected={year} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Reach: the period's figures beside growth over the full-year span */}
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+            <div className="rounded-xl bg-maroon-700 p-5 text-white shadow-sm md:p-6">
+              <p className="text-sm font-semibold uppercase tracking-widest text-gold-500">Community reach</p>
+              <p className="mt-1 text-xs text-maroon-100">{periodLabel}</p>
+              <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                {REACH.map((label) => (
+                  <div key={label} className="flex flex-col-reverse">
+                    <dt className="mt-1.5 text-sm leading-snug text-maroon-100">{label}</dt>
+                    <dd className="font-heading text-3xl font-bold leading-none text-gold-500">{formatNumber(valueOf(label))}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-ink-200/70 md:p-6 lg:col-span-2">
+              <h3 className="font-semibold text-ink-900">Where we grew most</h3>
+              <p className="mt-1 text-xs text-ink-600">
+                Change from {first.year} to {lastFull.year} (latest full year)
+              </p>
+              <div className="mt-5">
+                <GrowthBars
+                  rows={REACH.map((label) => ({
+                    label,
+                    from: seriesFor([first], label)[0].value,
+                    to: seriesFor([lastFull], label)[0].value,
+                  }))}
+                />
+              </div>
+            </div>
+          </div>
+
+          <details className="group">
+            <summary className="inline-flex min-h-[44px] cursor-pointer list-none items-center gap-2 font-semibold text-maroon-700 hover:underline">
+              <ChevronDown size={18} className="transition group-open:rotate-180" aria-hidden /> View all figures as a table
+            </summary>
+            <div className="mt-4">
+              <ImpactTable data={YEARLY_IMPACT} selected={year} />
+            </div>
+          </details>
+          {last.partial && (
+            <p className="text-sm text-ink-600">
+              {last.year} figures are year to date. They're drawn dashed in the charts and aren't compared with full years.
+            </p>
+          )}
         </div>
       </Section>
     </>

@@ -131,6 +131,8 @@ export interface ImpactMetric {
 
 export interface YearlyImpact {
   year: number;
+  /** Year still in progress (year-to-date figures) */
+  partial: boolean;
   metrics: { label: string; value: number }[];
 }
 
