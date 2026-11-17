@@ -1,7 +1,7 @@
-# Builds the site and uploads dist/ to SiteGround:
+# Puts the latest website live (Vercel via its deploy hook, and SiteGround once set up):
 #   - on every push to main (code changes)
-#   - every 30 minutes IF staff changed content in the CMS (/admin/) since the last deploy
-#   - on demand: GitHub → Actions → Deploy to SiteGround → Run workflow
+#   - every 30 minutes IF staff changed content in the CMS since the last update
+#   - on demand: GitHub → Actions → Update website → Run workflow
 #
 # Setup (once): add these repository secrets in GitHub → Settings → Secrets and variables → Actions:
 #   SITEGROUND_HOST     e.g. ssh.saisujalasravanthi.in or the server name from Site Tools → Devs → SSH Keys Manager
@@ -18,7 +18,7 @@
 # doesn't flag the Firebase key:
 #   VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID,
 #   VITE_FIREBASE_APP_ID, VITE_WEB3FORMS_ACCESS_KEY (and VITE_RECAPTCHA_SITE_KEY if used)
-name: Deploy to SiteGround
+name: Update website
 
 on:
   push:
@@ -96,6 +96,7 @@ jobs:
 
   # Builds and uploads to SiteGround. Skipped until the SITEGROUND_* secrets exist.
   deploy:
+    name: siteground
     needs: check
     if: needs.check.outputs.changed == 'true' && needs.check.outputs.siteground == 'true'
     runs-on: ubuntu-latest
