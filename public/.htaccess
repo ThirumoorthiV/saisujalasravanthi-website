@@ -1,0 +1,72 @@
+# Apache config for SiteGround — the equivalent of vercel.json.
+# The build copies it into dist/. Keep the old-site redirects in sync with vercel.json.
+
+Options -Indexes
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Force HTTPS on the real domain only (SiteGround can end SSL at its proxy, hence
+# X-Forwarded-Proto). The temporary sg-host.com address used for testing is left alone.
+RewriteCond %{HTTP_HOST} saisujalasravanthi\.in$ [NC]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Bare domain to www (canonical URLs use www)
+RewriteCond %{HTTP_HOST} ^saisujalasravanthi\.in$ [NC]
+RewriteRule ^ https://www.saisujalasravanthi.in%{REQUEST_URI} [R=301,L]
+
+# Old-site URLs to new pages (permanent, so search rankings carry over)
+RewriteRule ^aboutus/?$                                          /about-us/ [R=301,L,NC]
+RewriteRule ^covid19reliefwork/?$                                /about-us/our-journey/ [R=301,L,NC]
+RewriteRule ^covid-19-relief-work\.html$                         /about-us/our-journey/ [R=301,L,NC]
+RewriteRule ^education-mission/?$                                /programmes/education/ [R=301,L,NC]
+RewriteRule ^educationalactivities/?$                            /programmes/education/girl-child-education/ [R=301,L,NC]
+RewriteRule ^educational-activites\.html$                        /programmes/education/girl-child-education/ [R=301,L,NC]
+RewriteRule ^programminglives/?$                                 /programmes/community-empowerment/reprogramming-lives/ [R=301,L,NC]
+RewriteRule ^sri-sathya-sai-reprograming-lives\.html$            /programmes/community-empowerment/reprogramming-lives/ [R=301,L,NC]
+RewriteRule ^pediatricheartscreeningcentre/?$                    /programmes/healthcare/pediatric-heart-screening/ [R=301,L,NC]
+RewriteRule ^sri-sathya-sai-pediatric-heart-screening-centre\.html$ /programmes/healthcare/pediatric-heart-screening/ [R=301,L,NC]
+RewriteRule ^freemonthlycamp/?$                                  /programmes/healthcare/medical-camps/ [R=301,L,NC]
+RewriteRule ^sri-satya-sai-free-monthly-camp\.html$              /programmes/healthcare/medical-camps/ [R=301,L,NC]
+RewriteRule ^saiaarogyamultispecialityhospital/?$                /programmes/healthcare/sai-aarogya-hospital/ [R=301,L,NC]
+RewriteRule ^sai-swasthya-well-centers/?$                        /programmes/healthcare/sai-swasthya/ [R=301,L,NC]
+RewriteRule ^saiswasthya/?$                                      /programmes/healthcare/sai-swasthya/ [R=301,L,NC]
+RewriteRule ^sai-swasthya\.html$                                 /programmes/healthcare/sai-swasthya/ [R=301,L,NC]
+RewriteRule ^ruraldevelopment/?$                                 /programmes/rural-development/ [R=301,L,NC]
+RewriteRule ^rural-development\.html$                            /programmes/rural-development/ [R=301,L,NC]
+RewriteRule ^rualinfrastructure/?$                               /programmes/relief-emergency-support/cyclone-titli-rehabilitation/ [R=301,L,NC]
+RewriteRule ^rural-infrastructure\.html$                         /programmes/relief-emergency-support/cyclone-titli-rehabilitation/ [R=301,L,NC]
+RewriteRule ^aushadhalayam/?$                                    /programmes/healthcare/aushadhalayam/ [R=301,L,NC]
+RewriteRule ^sri-sathya-sai-aushadhalayam\.html$                 /programmes/healthcare/aushadhalayam/ [R=301,L,NC]
+RewriteRule ^surgeriesgapfundingsupport/?$                       /programmes/healthcare/surgery-support/ [R=301,L,NC]
+RewriteRule ^surgeries-gap-funding-support\.html$                /programmes/healthcare/surgery-support/ [R=301,L,NC]
+RewriteRule ^csr/?$                                              /csr-partnerships/ [R=301,L,NC]
+RewriteRule ^fcra-report/?$                                      /transparency/fcra/ [R=301,L,NC]
+RewriteRule ^contactus/?$                                        /contact-us/ [R=301,L,NC]
+RewriteRule ^donation/?$                                         /donate/ [R=301,L,NC]
+RewriteRule ^privacypolicy/?$                                    /privacy-policy/ [R=301,L,NC]
+RewriteRule ^termsandconditions/?$                               /terms-and-conditions/ [R=301,L,NC]
+RewriteRule ^refundpolicy/?$                                     /refund-policy/ [R=301,L,NC]
+</IfModule>
+
+# Folders without a trailing slash (e.g. /about-us) are redirected to /about-us/
+# by Apache itself (DirectorySlash, on by default), matching the canonical URLs.
+
+<IfModule mod_headers.c>
+# Build files have a content hash in their name, so they can be cached for a year
+<If "%{REQUEST_URI} =~ m#^/assets/#">
+  Header set Cache-Control "public, max-age=31536000, immutable"
+</If>
+# Images change rarely
+<If "%{REQUEST_URI} =~ m#^/images/#">
+  Header set Cache-Control "public, max-age=2592000"
+</If>
+# Pages must always be checked, so a new deploy shows up straight away
+<FilesMatch "\.html$">
+  Header set Cache-Control "no-cache"
+</FilesMatch>
+</IfModule>

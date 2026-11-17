@@ -1,4 +1,5 @@
 import type { Story, StoryCategory } from "@/types";
+import { CMS } from "./cms";
 
 export const STORY_CATEGORIES: StoryCategory[] = [
   "Healthcare Stories",
@@ -15,7 +16,8 @@ export const STORY_CATEGORIES: StoryCategory[] = [
 
 // Launch stories written from content on the existing website. Publish dates
 // are planned launch dates. Beneficiary stories need recorded consent (§5.7).
-export const STORIES: Story[] = [
+// Once this content is imported into the CMS (/login/), the site uses the CMS copy.
+export const SEED_STORIES: Story[] = [
   {
     slug: "varun-kumar-vsd-closure",
     cover: "/images/site/infant-cardiac-care.webp",
@@ -178,5 +180,7 @@ export const STORIES: Story[] = [
     metaDescription: "Volunteers reflect on selfless service, guided by the motto Love All Serve All.",
   },
 ];
+
+export const STORIES: Story[] = CMS.stories ?? SEED_STORIES;
 
 export const getStory = (slug: string) => STORIES.find((s) => s.slug === slug);

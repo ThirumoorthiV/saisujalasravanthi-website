@@ -1,4 +1,5 @@
 import type { Programme, ProgrammeCategory, ProgrammeCategorySlug } from "@/types";
+import { CMS } from "./cms";
 
 // Content sourced from the existing website (saisujalasravanthi.in), regrouped
 // into the five programme categories of §5.3.
@@ -60,9 +61,10 @@ export const PROGRAMME_CATEGORIES: ProgrammeCategory[] = [
 
 export const getCategory = (slug: string) => PROGRAMME_CATEGORIES.find((c) => c.slug === slug);
 
-export const PROGRAMMES: Programme[] = [
+export const SEED_PROGRAMMES: Programme[] = [
   {
     slug: "sai-swasthya",
+    shortName: "Sai Swasthya",
     image: "/images/site/sai-swasthya-centre-2.webp",
     name: "Sai Swasthya Wellness Centres",
     category: "healthcare",
@@ -87,6 +89,7 @@ export const PROGRAMMES: Programme[] = [
   },
   {
     slug: "sai-aarogya-hospital",
+    shortName: "Sai Aarogya Hospital",
     image: "/images/site/sai-aarogya-hospital-bapatla.webp",
     name: "Sai Aarogya Multi-Speciality Hospital",
     category: "healthcare",
@@ -103,6 +106,7 @@ export const PROGRAMMES: Programme[] = [
   },
   {
     slug: "medical-camps",
+    shortName: "Medical Camps",
     image: "/images/site/outreach-medical-camp.webp",
     name: "Monthly Outreach Medical Camps",
     category: "healthcare",
@@ -119,6 +123,7 @@ export const PROGRAMMES: Programme[] = [
   },
   {
     slug: "pediatric-heart-screening",
+    shortName: "Pediatric Heart Screening",
     image: "/images/site/pediatric-heart-screening-niloufer.webp",
     name: "Pediatric Heart Screening Centre",
     category: "healthcare",
@@ -140,6 +145,7 @@ export const PROGRAMMES: Programme[] = [
   },
   {
     slug: "surgery-support",
+    shortName: "Surgery Support",
     image: "/images/site/infant-surgery-support.webp",
     name: "Surgeries Gap Funding Support",
     category: "healthcare",
@@ -156,6 +162,7 @@ export const PROGRAMMES: Programme[] = [
   },
   {
     slug: "aushadhalayam",
+    shortName: "Aushadhalayam",
     image: "/images/site/aushadhalayam-pharmacy.webp",
     name: "Sri Sathya Sai Aushadhalayam (Pharma Bank)",
     category: "healthcare",
@@ -298,6 +305,8 @@ export const PROGRAMMES: Programme[] = [
     impact: [],
   },
 ];
+
+export const PROGRAMMES: Programme[] = CMS.programmes ?? SEED_PROGRAMMES;
 
 export const programmesIn = (category: ProgrammeCategorySlug) =>
   PROGRAMMES.filter((p) => p.category === category && p.active);

@@ -1,8 +1,9 @@
 import { useEffect, useId, useState } from "react";
-import { ChevronDown, ChevronRight, HeartHandshake, Mail, Menu, Phone, X } from "lucide-react";
+import { ChevronDown, ChevronRight, CircleUserRound, HeartHandshake, Mail, Menu, Phone, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { ENQUIRY_INBOXES, MAIN_NAV, SITE, type NavItem } from "@/data/site";
 import { buttonClass } from "@/components/ui/Button";
+import { onCmsSessionChange, readCmsSession, type CmsSession } from "@/lib/cmsSession";
 
 export function Logo({ className = "h-12 md:h-14" }: { className?: string }) {
   return (
@@ -102,6 +103,44 @@ function MobileItem({ item, depth, expanded, onToggle }: { item: NavItem; depth:
   );
 }
 
+/**
+ * "Sign in" for the staff CMS (a separate app, so a plain link rather than a router Link).
+ * Once someone has signed in to the CMS on this browser, it shows their avatar and
+ * first name instead and goes straight to their CMS. Read after the page loads, so
+ * the prerendered HTML (and Google) always sees "Sign in".
+ */
+function AccountLink({ className, mobile = false }: { className: string; mobile?: boolean }) {
+  const [session, setSession] = useState<CmsSession | null>(null);
+  useEffect(() => {
+    setSession(readCmsSession());
+    return onCmsSessionChange(() => setSession(readCmsSession()));
+  }, []);
+
+  if (!session) {
+    return (
+      <a href="/login/" rel="nofollow" className={className}>
+        <CircleUserRound size={mobile ? 18 : 16} aria-hidden /> Sign in
+      </a>
+    );
+  }
+
+  const firstName = session.name.trim().split(/\s+/)[0];
+  const size = mobile ? "h-8 w-8 text-sm" : "h-7 w-7 text-xs";
+  return (
+    <a href={session.area} rel="nofollow" title={`Signed in as ${session.name}. Open the CMS`} className={className}>
+      {session.photo ? (
+        <img src={session.photo} alt="" className={`${size} shrink-0 rounded-full object-cover ring-2 ring-gold-500`} />
+      ) : (
+        <span className={`${size} flex shrink-0 items-center justify-center rounded-full bg-gold-500 font-bold text-maroon-900`} aria-hidden>
+          {firstName.charAt(0).toUpperCase()}
+        </span>
+      )}
+      <span className={mobile ? "min-w-0 truncate" : "max-w-[9rem] truncate"}>{mobile ? `${session.name} · Open CMS` : firstName}</span>
+      <span className="sr-only">(signed in, open the CMS)</span>
+    </a>
+  );
+}
+
 /** One open sub-menu per level — opening another closes the previous one. */
 function MobileItems({ items, depth = 0 }: { items: NavItem[]; depth?: number }) {
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -140,12 +179,14 @@ export function Header() {
       <div className="mx-auto flex max-w-content items-center gap-2 px-4 py-2 sm:gap-4 sm:px-6">
         <Logo className="h-10 sm:h-14 lg:h-16" />
         <div className="ml-auto hidden items-center gap-6 text-sm text-ink-600 lg:flex">
-          <a href={`mailto:${ENQUIRY_INBOXES["General Enquiries"]}`} className="flex items-center gap-2 hover:text-maroon-700">
+          <a href={`mailto:${ENQUIRY_INBOXES["General Enquiries"]}`} className="hidden items-center gap-2 hover:text-maroon-700 xl:flex">
             <Mail size={16} className="text-maroon-700" aria-hidden /> {ENQUIRY_INBOXES["General Enquiries"]}
           </a>
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-2 whitespace-nowrap">
             <Phone size={16} className="text-maroon-700" aria-hidden /> {SITE.phones.join(" / ")}
           </span>
+          <AccountLink className="flex items-center gap-1.5 whitespace-nowrap border-l border-ink-200 pl-6 font-semibold text-maroon-700 hover:underline" />
+
         </div>
         <Link to="/donate/" className={`${buttonClass("primary")} ml-auto !min-h-[38px] !px-3 !py-1.5 sm:!min-h-[44px] sm:!px-5 sm:!py-2.5 lg:ml-0`}>
           <HeartHandshake size={16} aria-hidden /> Donate
@@ -173,6 +214,7 @@ export function Header() {
       {open && (
         <nav id="mobile-nav" aria-label="Mobile" className="max-h-[calc(100dvh-60px)] overflow-y-auto border-t border-ink-200 bg-white px-4 py-4 sm:px-6 xl:hidden">
           <MobileItems items={MAIN_NAV} />
+          <AccountLink mobile className="mt-3 flex items-center gap-2 border-t border-ink-200 pt-4 text-[15px] font-semibold text-maroon-700" />
         </nav>
       )}
     </header>

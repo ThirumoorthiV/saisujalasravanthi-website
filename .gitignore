@@ -3,3 +3,6 @@ dist
 dist-server
 *.local
 .DS_Store
+# Downloaded from the CMS at build time (scripts/fetch-content.mjs)
+src/data/cms.generated.json
+public/images/cms/

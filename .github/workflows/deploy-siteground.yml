@@ -1,0 +1,125 @@
+# Builds the site and uploads dist/ to SiteGround:
+#   - on every push to main (code changes)
+#   - every 30 minutes IF staff changed content in the CMS (/admin/) since the last deploy
+#   - on demand: GitHub → Actions → Deploy to SiteGround → Run workflow
+#
+# Setup (once): add these repository secrets in GitHub → Settings → Secrets and variables → Actions:
+#   SITEGROUND_HOST     e.g. ssh.saisujalasravanthi.in or the server name from Site Tools → Devs → SSH Keys Manager
+#   SITEGROUND_PORT     usually 18765
+#   SITEGROUND_USER     the SSH username shown in Site Tools
+#   SITEGROUND_PATH     e.g. www/saisujalasravanthi.in/public_html/
+#   SITEGROUND_SSH_KEY  the PRIVATE key whose public half is imported in SiteGround
+#   VERCEL_DEPLOY_HOOK  (optional) Vercel → Project → Settings → Git → Deploy Hooks, so the
+#                       Vercel copy also picks up CMS changes
+# Until SITEGROUND_HOST is set, the build still runs but nothing is uploaded.
+name: Deploy to SiteGround
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-siteground
+  cancel-in-progress: false
+
+jobs:
+  # Scheduled runs only continue when meta/site in Firestore (touched on every CMS
+  # save) has changed since the last successful deploy.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.result.outputs.changed }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .env
+
+      - name: Read CMS version
+        id: version
+        run: |
+          PROJECT=$(grep -E '^VITE_FIREBASE_PROJECT_ID=' .env | cut -d= -f2- | tr -d '"\r')
+          KEY=$(grep -E '^VITE_FIREBASE_API_KEY=' .env | cut -d= -f2- | tr -d '"\r')
+          V=""
+          if [ -n "$PROJECT" ]; then
+            V=$(curl -fsS "https://firestore.googleapis.com/v1/projects/$PROJECT/databases/(default)/documents/meta/site?key=$KEY" \
+              | jq -r '.fields.updatedAt.timestampValue // empty' || true)
+          fi
+          echo "CMS version: ${V:-none}"
+          echo "version=${V:-none}" >> "$GITHUB_OUTPUT"
+
+      - name: Already deployed?
+        id: seen
+        uses: actions/cache/restore@v4
+        with:
+          path: .cms-version
+          key: cms-version-${{ steps.version.outputs.version }}
+          lookup-only: true
+
+      - name: Decide
+        id: result
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.version.outputs.version }}" = "none" ] || [ "${{ steps.seen.outputs.cache-hit }}" = "true" ]; then
+            echo "No CMS changes since the last deploy."; echo "changed=false" >> "$GITHUB_OUTPUT"
+          else echo "CMS content changed."; echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+
+  deploy:
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    env:
+      CONFIGURED: ${{ secrets.SITEGROUND_HOST != '' }}
+      HAS_VERCEL_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Downloads CMS content, then prerenders every page and writes sitemap.xml,
+      # robots.txt, 404.html and .htaccess into dist/
+      - run: npm run build
+
+      - name: Skip upload (SiteGround secrets not set yet)
+        if: env.CONFIGURED != 'true'
+        run: echo "::warning::SiteGround secrets are not configured — build checked, nothing uploaded."
+
+      - name: Set up SSH key
+        if: env.CONFIGURED == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SITEGROUND_SSH_KEY }}" > ~/.ssh/siteground
+          chmod 600 ~/.ssh/siteground
+          ssh-keyscan -p "${{ secrets.SITEGROUND_PORT }}" "${{ secrets.SITEGROUND_HOST }}" >> ~/.ssh/known_hosts
+
+      # --delete removes files that no longer exist in the build, but never touches
+      # .well-known (SSL certificate checks) or anything SiteGround keeps beside the site.
+      - name: Upload to SiteGround
+        if: env.CONFIGURED == 'true'
+        run: |
+          rsync -az --delete \
+            --exclude ".well-known/" \
+            -e "ssh -i ~/.ssh/siteground -p ${{ secrets.SITEGROUND_PORT }}" \
+            dist/ "${{ secrets.SITEGROUND_USER }}@${{ secrets.SITEGROUND_HOST }}:${{ secrets.SITEGROUND_PATH }}"
+
+      # Pushes to main already redeploy Vercel; CMS changes need the hook.
+      - name: Rebuild Vercel copy
+        if: env.HAS_VERCEL_HOOK == 'true' && github.event_name != 'push'
+        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" > /dev/null
+
+      - name: Remember deployed CMS version
+        run: echo "${{ needs.check.outputs.version }}" > .cms-version
+
+      - uses: actions/cache/save@v4
+        if: needs.check.outputs.version != 'none'
+        with:
+          path: .cms-version
+          key: cms-version-${{ needs.check.outputs.version }}

@@ -207,7 +207,7 @@ function LeaderCard({ leader }: { leader: Leader }) {
 
 export function Leadership() {
   const crumb = { name: "Leadership", path: "/about-us/leadership/" };
-  const founder = LEADERSHIP.find((l) => l.role === "Founder & Guiding Light")!;
+  const founder = LEADERSHIP.find((l) => l.role === "Founder & Guiding Light");
   const trustees = LEADERSHIP.filter((l) => l.role === "Board of Trustees");
   const council = LEADERSHIP.filter((l) => l.role === "Advisory Council");
   return (
@@ -224,6 +224,7 @@ export function Leadership() {
       />
 
       {/* Founder — content left, photo right */}
+      {founder && (
       <Section tone="cream">
         <div className="grid items-center gap-8 md:gap-10 lg:grid-cols-[1.3fr_1fr]">
           <div>
@@ -245,6 +246,7 @@ export function Leadership() {
           </div>
         </div>
       </Section>
+      )}
 
       {/* Board of Trustees */}
       <Section tone="white">

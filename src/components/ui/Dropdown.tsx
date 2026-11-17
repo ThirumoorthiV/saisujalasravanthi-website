@@ -20,6 +20,9 @@ export function Dropdown({
   invalid = false,
   name,
   onBlur,
+  id,
+  ariaLabel,
+  className = "mt-1",
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -29,6 +32,11 @@ export function Dropdown({
   invalid?: boolean;
   name?: string;
   onBlur?: () => void;
+  id?: string;
+  /** For dropdowns without a visible label */
+  ariaLabel?: string;
+  /** Classes for the wrapper (spacing, width) */
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -86,15 +94,17 @@ export function Dropdown({
   };
 
   return (
-    <div ref={root} className="relative mt-1">
+    <div ref={root} className={`relative ${className}`}>
       <button
         type="button"
+        id={id}
         name={name}
         role="combobox"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
         aria-labelledby={labelId}
+        aria-label={ariaLabel}
         aria-invalid={invalid}
         aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined}
         onClick={() => (open ? setOpen(false) : openList())}
@@ -103,7 +113,7 @@ export function Dropdown({
           invalid ? "border-error" : "border-ink-200"
         }`}
       >
-        <span className={selected ? "text-ink-900" : "text-ink-600/70"}>{selected?.label ?? placeholder}</span>
+        <span className={`truncate ${selected ? "text-ink-900" : "text-ink-600/70"}`}>{selected?.label ?? placeholder}</span>
         <ChevronDown size={18} className={`shrink-0 text-maroon-700 transition ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
       {open && (
@@ -112,6 +122,7 @@ export function Dropdown({
           id={listId}
           role="listbox"
           aria-labelledby={labelId}
+          aria-label={ariaLabel}
           className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-lg bg-white py-1 shadow-lg ring-1 ring-ink-200"
         >
           {options.map((o, i) => {

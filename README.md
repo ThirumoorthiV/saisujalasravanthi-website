@@ -41,18 +41,56 @@ Search the code for `TODO` to find every pending item. Notable ones:
 - Partner logos only render when `permissionGranted: true`.
 - Images are maroon placeholders with descriptive `aria-label`s; swap in WebP photos.
 
-## Form submissions (Web3Forms)
+## Form submissions (Firestore + Web3Forms)
 
-All forms (Contact, CSR enquiry, Volunteer, Medical volunteer, Share expertise) post to
-[Web3Forms](https://web3forms.com) from `src/lib/submit.ts`.
+All forms (Contact, CSR enquiry, Volunteer, Medical volunteer, Share expertise) go through
+`src/lib/submit.ts`, which does both of these:
 
-1. Create a free access key at web3forms.com using the inbox that should receive submissions.
-2. `cp .env.example .env` and set `VITE_WEB3FORMS_ACCESS_KEY=...`, then rebuild/redeploy
-   (also add the variable in your host's environment settings).
+- **Firestore** (`src/lib/firebase.ts`): saves the submission to the `submissions` collection, a
+  permanent record staff can view and export in the Firebase console.
+- **Web3Forms**: emails it to the inbox that owns the access key (reply-to is the submitter).
 
-Each submission arrives as an email (subject names the form and enquiry type; reply-to is the
-submitter). Browsing/exporting stored submissions (Submissions API, Google Sheets integration)
-needs Web3Forms **Pro**. Without a key, forms show an error asking visitors to email info@.
+If either one succeeds the visitor sees "Thank you", so an outage of one service never loses an
+enquiry. Configure both in `.env` (see `.env.example`). All values there are public by design.
+Firestore access is limited by `firestore.rules` (the website can only create submissions), which
+must be pasted into Firebase console, then Firestore, then Rules. The Firebase SDK is only downloaded
+when someone submits a form.
+
+## Content management (CMS: sign in at `/login/`)
+
+Trust staff sign in at `<site>/login/` (the **Sign in** link in the header). Admins then work at
+`/admin/` and editors at `/staff/`; editors opening `/admin/` are sent to `/staff/`. The code is in
+`src/admin/` (one app with three entry pages: `login/`, `admin/`, `staff/`), so visitors never download it. Everything is stored in Firebase:
+
+- **Firestore** `stories`, `events`, `gallery`: one document per item, with `published: true/false`.
+- **Firestore** `media`: uploaded photos, resized in the browser (max 1600px, WebP, under 900 KB),
+  so no Firebase Storage / paid plan is needed.
+- **Firebase Authentication** (Email/Password) for logins; the `staff` collection says who has access
+  (`role: "admin"` or `"editor"`). Admins also see form submissions and manage staff.
+- `firestore.rules` enforces all of this; publish it after any change.
+
+**How content reaches the site:** `scripts/fetch-content.mjs` runs before `npm run dev` / `npm run build`,
+downloads published items into `src/data/cms.generated.json` and photos into `public/images/cms/`
+(both gitignored), and the pages are prerendered from them as before. While `npm run dev` is running
+it checks for CMS changes every 10 seconds and the page updates by itself; `npm run content`
+downloads on demand. Every CMS save updates
+`meta/site`; the deploy workflow checks it every 30 minutes and rebuilds when it has changed.
+
+Until an admin clicks **Import current content** on the CMS dashboard, the site uses the built-in
+`SEED_*` lists in `src/data/`. After that the CMS is the source of truth, and edits to the `SEED_*`
+lists no longer show on the site.
+
+**One-time setup:**
+1. Publish `firestore.rules` (Firestore → Rules).
+2. Authentication → Get started → Sign-in method → enable **Email/Password**.
+3. Authentication → Users → Add user (first admin); copy the **User UID**.
+4. Firestore → Start collection `staff` → Document ID = that UID, fields `name` (string),
+   `email` (string), `role` (string) = `admin`.
+5. Open `/login/`, sign in, and click **Import** on the Dashboard.
+
+Further staff are added by an admin on the CMS **Staff access** page: it creates their login and
+Firebase emails them a link to set their own password (Authentication → Templates → Password reset
+controls that email's wording and sender name).
 
 ## Images
 
@@ -62,23 +100,33 @@ needs Web3Forms **Pro**. Without a key, forms show an error asking visitors to e
   required). Used for Get Involved, CSR, Donate and a few page banners where the Trust has no photo yet.
 - Partner logos are shown because they already appear on the existing site — confirm written permission (§5.9).
 
-## SEO and deployment (Vercel)
+## SEO and deployment
 
 `npm run build` builds the app, then prerenders every page to static HTML
 (`src/entry-server.tsx` + `scripts/prerender.mjs`) so search engines and social previews see real
 content. It also writes `dist/404.html`, `dist/sitemap.xml` and `dist/robots.txt`.
 
-- **New pages** are found by following links from the homepage — anything linked from the site is
+- **New pages** are found by following links from the homepage, so anything linked from the site is
   prerendered and added to the sitemap automatically. The build fails if a link points to a missing page.
-- **Old-site URLs** are 301-redirected in `vercel.json`. Add new ones there (with and without a
-  trailing slash).
-- **Trailing slashes** are enforced by Vercel (`trailingSlash: true`); canonical URLs always use one.
-- **Share image** for Facebook / LinkedIn / WhatsApp is `public/og-image.jpg` (1200×630).
-- **Domain** — canonical URLs use `https://www.saisujalasravanthi.in` (`SITE.url`). In Vercel, add both
-  the www and bare domain and redirect the bare domain to www.
+- **Share image** for Facebook / LinkedIn / WhatsApp is `public/og-image.jpg` (1200x630).
+- **Domain**: canonical URLs use `https://www.saisujalasravanthi.in` (`SITE.url`); the bare domain
+  must redirect to www.
 - After launch, add the site to Google Search Console and submit `/sitemap.xml`.
+
+### SiteGround (production)
+
+`.github/workflows/deploy-siteground.yml` builds on every push to `main` and uploads `dist/` to
+SiteGround over SSH (rsync). The repository secrets it needs are listed at the top of that file.
+`public/.htaccess` does on Apache what `vercel.json` does on Vercel: HTTPS + www redirects, the
+old-site 301 redirects, the 404 page and caching. Keep its redirect list in sync with `vercel.json`.
+
+### Vercel (preview copy)
+
+Vercel still deploys every push to `saisujalasravanthi-website.vercel.app` using `vercel.json`
+(redirects, `trailingSlash: true`). Forms there write to the same Firestore and inbox, so mark
+test submissions clearly.
 
 ## Before launch (not yet done)
 
-1. **Headless CMS** — move `src/data/*` collections into Sanity/Strapi/Decap and rebuild on publish.
+1. **CMS, later phases**: move programmes, leadership, impact figures and reports into the CMS too.
 2. GA4, interactive map (react-leaflet) once centre lat/long exist.

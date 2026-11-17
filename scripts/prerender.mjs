@@ -27,6 +27,7 @@ const normalise = (href) => {
   if (!href?.startsWith("/") || href.startsWith("//")) return null;
   const p = href.split(/[?#]/)[0];
   if (path.extname(p)) return null; // files: PDFs, images
+  if (/^\/(admin|staff|login)\//.test(p)) return null; // the CMS, a separate app
   return p.endsWith("/") ? p : `${p}/`;
 };
 
@@ -63,6 +64,6 @@ ${pages
 </urlset>
 `;
 fs.writeFileSync(path.join(dist, "sitemap.xml"), sitemap);
-fs.writeFileSync(path.join(dist, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+fs.writeFileSync(path.join(dist, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /login/\nDisallow: /admin/\nDisallow: /staff/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
 console.log(`Prerendered ${pages.length} pages + 404.html, sitemap.xml, robots.txt`);

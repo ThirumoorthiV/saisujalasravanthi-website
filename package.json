@@ -4,13 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-server && node scripts/prerender.mjs",
+    "dev": "node scripts/fetch-content.mjs --dev && vite",
+    "build": "node scripts/fetch-content.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-server && node scripts/prerender.mjs",
     "preview": "vite preview",
+    "content": "node scripts/fetch-content.mjs",
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "firebase": "^11.10.0",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

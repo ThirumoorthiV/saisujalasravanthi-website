@@ -1,4 +1,5 @@
 import type { EventCategory, TrustEvent } from "@/types";
+import { CMS } from "./cms";
 
 export const EVENT_CATEGORIES: EventCategory[] = [
   "Medical Camps",
@@ -12,10 +13,10 @@ export const EVENT_CATEGORIES: EventCategory[] = [
 
 // The existing site has no dated events. Entries below are based on real
 // programmes but their dates and counts are SAMPLES — replace with the Trust's
-// event reports (§11). The Events page shows a notice while SAMPLE_EVENTS is true.
-export const SAMPLE_EVENTS = true;
+// event reports (§11). The Events page shows a notice until events come from the CMS.
+export const SAMPLE_EVENTS = !CMS.events;
 
-export const EVENTS: TrustEvent[] = [
+export const SEED_EVENTS: TrustEvent[] = [
   {
     slug: "monthly-dental-camp-mahbubnagar",
     image: "/images/site/outreach-medical-camp.webp",
@@ -108,6 +109,8 @@ export const EVENTS: TrustEvent[] = [
     status: "Completed",
   },
 ];
+
+export const EVENTS: TrustEvent[] = CMS.events ?? SEED_EVENTS;
 
 export const getEvent = (slug: string) => EVENTS.find((e) => e.slug === slug);
 

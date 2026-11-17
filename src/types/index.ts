@@ -20,6 +20,8 @@ export interface ProgrammeCategory {
 export interface Programme {
   slug: string;
   name: string;
+  /** Shorter name for menus; defaults to name. */
+  shortName?: string;
   category: ProgrammeCategorySlug;
   summary: string;
   problem: string;

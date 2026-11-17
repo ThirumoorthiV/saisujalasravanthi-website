@@ -1,3 +1,5 @@
+import { programmesIn } from "./programmes";
+
 // Site-wide settings. Values marked TODO must be supplied by the Trust (§11).
 
 // Contact details, name and motto taken from the existing site (saisujalasravanthi.in).
@@ -79,14 +81,8 @@ export const MAIN_NAV: NavItem[] = [
       {
         label: "Healthcare",
         to: "/programmes/healthcare/",
-        children: [
-          { label: "Sai Swasthya", to: "/programmes/healthcare/sai-swasthya/" },
-          { label: "Sai Aarogya Hospital", to: "/programmes/healthcare/sai-aarogya-hospital/" },
-          { label: "Medical Camps", to: "/programmes/healthcare/medical-camps/" },
-          { label: "Pediatric Heart Screening", to: "/programmes/healthcare/pediatric-heart-screening/" },
-          { label: "Surgery Support", to: "/programmes/healthcare/surgery-support/" },
-          { label: "Aushadhalayam", to: "/programmes/healthcare/aushadhalayam/" },
-        ],
+        // Follows the active healthcare programmes (editable in the CMS)
+        children: programmesIn("healthcare").map((p) => ({ label: p.shortName ?? p.name, to: `/programmes/healthcare/${p.slug}/` })),
       },
       { label: "Education", to: "/programmes/education/" },
       { label: "Rural Development", to: "/programmes/rural-development/" },

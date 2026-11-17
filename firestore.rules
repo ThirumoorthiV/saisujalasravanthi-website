@@ -1,0 +1,102 @@
+rules_version = '2';
+
+// Paste into Firebase console → Firestore Database → Rules → Publish.
+//
+// - Visitors can only ADD form submissions and READ published content.
+// - Staff (a document in `staff` whose ID is their login's User UID) manage content
+//   in the CMS (sign in at /login/). Admins also manage staff and read form submissions.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function staff() {
+      return get(/databases/$(database)/documents/staff/$(request.auth.uid)).data;
+    }
+    function isStaff() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+    function isAdmin() {
+      return isStaff() && staff().role == 'admin';
+    }
+
+    match /submissions/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['formName', 'form', 'page', 'data', 'createdAt'])
+        && request.resource.data.formName is string
+        && request.resource.data.formName.size() < 64
+        && request.resource.data.form is string
+        && request.resource.data.page is string
+        && request.resource.data.page.size() < 2048
+        && request.resource.data.data is map
+        && request.resource.data.data.keys().size() < 30
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // Website content. Drafts are visible to staff only.
+    match /stories/{id} {
+      allow read: if resource.data.published == true || isStaff();
+      allow write: if isStaff();
+    }
+    match /events/{id} {
+      allow read: if resource.data.published == true || isStaff();
+      allow write: if isStaff();
+    }
+    match /gallery/{id} {
+      allow read: if resource.data.published == true || isStaff();
+      allow write: if isStaff();
+    }
+    match /programmes/{id} {
+      allow read: if resource.data.published == true || isStaff();
+      allow write: if isStaff();
+    }
+    match /leadership/{id} {
+      allow read: if resource.data.published == true || isStaff();
+      allow write: if isStaff();
+    }
+    match /centres/{id} {
+      allow read: if resource.data.published == true || isStaff();
+      allow write: if isStaff();
+    }
+
+    // Photos uploaded in the CMS (resized in the browser, stored as bytes).
+    // Public: the website build downloads them.
+    match /media/{id} {
+      allow read: if true;
+      allow create: if isStaff() && request.resource.data.bytes is bytes;
+      allow delete: if isStaff();
+      allow update: if false;
+    }
+
+    // meta/site.updatedAt changes on every CMS save; the deploy workflow checks it
+    // to decide whether the site needs rebuilding.
+    match /meta/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /staff/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin()
+        && request.resource.data.role in ['admin', 'editor']
+        // An admin can't remove or demote themselves, so there is always one admin.
+        && uid != request.auth.uid;
+      allow delete: if isAdmin() && uid != request.auth.uid;
+      // Everyone may change their own name and photo (My profile), but not their role.
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photo'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 80
+        && (!('photo' in request.resource.data)
+          || (request.resource.data.photo is string
+            && request.resource.data.photo.size() < 150000
+            && request.resource.data.photo.matches('data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+')));
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

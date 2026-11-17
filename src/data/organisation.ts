@@ -1,10 +1,11 @@
 import type { Centre, CsrProject, GalleryItem, Leader, Partner, Report } from "@/types";
+import { CMS } from "./cms";
 
 // Leadership, centres, projects and reports sourced from the existing website
 // (saisujalasravanthi.in). Items marked TODO still need Trust input (§11).
 
 // Order is display order within each group.
-export const LEADERSHIP: Leader[] = [
+export const SEED_LEADERSHIP: Leader[] = [
   {
     name: "Sri Madhusudan Sai",
     photo: "/images/leaders/sri-madhusudan-sai.webp",
@@ -67,7 +68,7 @@ export const MILESTONES = [
 
 const swasthya = (town: string, state: Centre["state"]): Centre => ({ name: `Sai Swasthya — ${town}`, type: "Sai Swasthya Centre", address: town, state });
 
-export const CENTRES: Centre[] = [
+export const SEED_CENTRES: Centre[] = [
   { name: "Head Office", type: "Office", address: "#8-2-601/P/1, Panchavathi Colony, Road No. 10, Banjara Hills, Hyderabad – 500034", state: "Telangana" },
   { name: "Pediatric Heart Screening Centre", type: "Screening Centre", address: "Niloufer Hospital, Hyderabad", state: "Telangana" },
   ...["Jagtial", "Kagaznagar", "Kondapaka", "Laxetipeta", "Mahbubnagar", "Nagarkurnool", "Peddakonduru", "Sailingi"].map((t) => swasthya(t, "Telangana")),
@@ -76,6 +77,9 @@ export const CENTRES: Centre[] = [
     swasthya(t, "Andhra Pradesh"),
   ),
 ]; // TODO: full addresses + lat/long for the map
+
+export const LEADERSHIP: Leader[] = CMS.leadership ?? SEED_LEADERSHIP;
+export const CENTRES: Centre[] = CMS.centres ?? SEED_CENTRES;
 
 /** Other states where the wider Sai Swasthya network operates (existing site). */
 export const NETWORK_OTHER_STATES = ["Bihar", "Jharkhand", "Karnataka", "Odisha", "Punjab", "Tamil Nadu", "West Bengal"];
@@ -184,7 +188,7 @@ const g = (
   date: string,
 ): GalleryItem => ({ id, src: `/images/site/${file}.webp`, alt, caption, group, subCategory, programme, location, date });
 
-export const GALLERY: GalleryItem[] = [
+export const SEED_GALLERY: GalleryItem[] = [
   g("g1", "pediatric-heart-screening-niloufer", "Paediatric cardiologists examining an infant at Niloufer Hospital", "Pediatric heart screening at Niloufer Hospital", "Healthcare", "Cardiac Screening", "healthcare", "Hyderabad", "2025-10-04"),
   g("g2", "pediatric-echo-screening", "Doctor performing an echocardiogram on a child", "Echocardiogram screening", "Healthcare", "Cardiac Screening", "healthcare", "Hyderabad", "2025-09-12"),
   g("g3", "infant-cardiac-care", "Doctor attending to an infant in a hospital ward", "Post-surgery infant care", "Healthcare", "Cardiac Screening", "healthcare", "Hyderabad", "2025-07-20"),
@@ -208,3 +212,5 @@ export const GALLERY: GalleryItem[] = [
   g("g21", "community-women", "Village women at a community programme", "Women & child welfare programme", "Events", "Workshops", "community-empowerment", "Telangana", "2024-08-10"),
   g("g22", "covid-relief-grocery-kits", "Families receiving grocery kits during COVID-19", "COVID-19 grocery kit distribution", "Events", "Special Programmes", "relief-emergency-support", "Sangareddy", "2020-05-10"),
 ];
+
+export const GALLERY: GalleryItem[] = CMS.gallery ?? SEED_GALLERY;
