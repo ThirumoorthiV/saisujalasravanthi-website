@@ -51,7 +51,10 @@ All forms (Contact, CSR enquiry, Volunteer, Medical volunteer, Share expertise) 
 - **Web3Forms**: emails it to the inbox that owns the access key (reply-to is the submitter).
 
 If either one succeeds the visitor sees "Thank you", so an outage of one service never loses an
-enquiry. Configure both in `.env` (see `.env.example`). All values there are public by design.
+enquiry. Configure both in `.env` (see `.env.example`). All values there are public by design,
+but `.env` is not committed (GitHub's secret scanner flags the Firebase key): for builds,
+the same values are set as GitHub repository **Variables** (used by the deploy workflow)
+and as Vercel **Environment Variables**.
 Firestore access is limited by `firestore.rules` (the website can only create submissions), which
 must be pasted into Firebase console, then Firestore, then Rules. The Firebase SDK is only downloaded
 when someone submits a form.
