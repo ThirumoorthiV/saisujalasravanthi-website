@@ -1,6 +1,6 @@
 # Puts the latest website live (Vercel via its deploy hook, and SiteGround once set up):
 #   - on every push to main (code changes)
-#   - every 30 minutes IF staff changed content in the CMS since the last update
+#   - every 5 minutes IF staff changed content in the CMS since the last update
 #   - on demand: GitHub → Actions → Update website → Run workflow
 #
 # Setup (once): add these repository secrets in GitHub → Settings → Secrets and variables → Actions:
@@ -24,7 +24,9 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "*/30 * * * *"
+    # Every 5 minutes (GitHub sometimes starts these a few minutes late). Each check
+    # takes ~5 seconds and only rebuilds when something was published in the CMS.
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 concurrency:

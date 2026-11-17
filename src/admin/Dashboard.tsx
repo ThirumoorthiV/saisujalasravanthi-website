@@ -55,7 +55,6 @@ export function Dashboard() {
   };
 
   if (!counts && !error) return <Spinner />;
-  const lastChange = meta?.updatedAt?.toDate();
   const notImported = COLLECTION_LIST.filter((d) => !isImported(meta, d.name));
 
   return (
@@ -123,10 +122,12 @@ export function Dashboard() {
           <li>
             <strong>Save draft</strong> keeps your work in the CMS only. <strong>Publish</strong> puts it on the website.
           </li>
-          <li>Published changes appear on the website within about 30 minutes, after the site is automatically rebuilt.</li>
+          <li>Published changes appear on the website within about 15 minutes, after the site is automatically rebuilt.</li>
           <li>Photos are resized automatically, so you can upload them straight from a phone or camera.</li>
         </ul>
-        {lastChange && <p className="mt-3 text-sm text-ink-600">Last change in the CMS: {lastChange.toLocaleString("en-IN")}</p>}
+        {meta?.updatedAt && (
+          <p className="mt-3 text-sm text-ink-600">Last change in the CMS: {meta.updatedAt.toDate().toLocaleString("en-IN")}</p>
+        )}
       </Card>
     </>
   );

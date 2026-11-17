@@ -77,7 +77,8 @@ downloads published items into `src/data/cms.generated.json` and photos into `pu
 (both gitignored), and the pages are prerendered from them as before. While `npm run dev` is running
 it checks for CMS changes every 10 seconds and the page updates by itself; `npm run content`
 downloads on demand. Every CMS save updates
-`meta/site`; the deploy workflow checks it every 30 minutes and rebuilds when it has changed.
+`meta/site`; the "Update website" workflow checks it every 5 minutes and rebuilds when it has changed.
+For an immediate update: GitHub → Actions → Update website → Run workflow.
 
 Until an admin clicks **Import current content** on the CMS dashboard, the site uses the built-in
 `SEED_*` lists in `src/data/`. After that the CMS is the source of truth, and edits to the `SEED_*`

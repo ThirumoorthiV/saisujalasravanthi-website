@@ -226,7 +226,7 @@ export function ContentEditor() {
       setOriginal({ ...item, id: savedId, published: publish });
       setMessage({
         tone: "success",
-        text: publish ? "Published. It will appear on the website within about 30 minutes." : "Draft saved. It is not on the website.",
+        text: publish ? "Published. It will appear on the website within about 15 minutes." : "Draft saved. It is not on the website.",
       });
       if (!id) navigate(`/${def.name}/edit/${savedId}`, { replace: true });
     } catch (err) {
