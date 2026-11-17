@@ -11,7 +11,7 @@
 #   SITEGROUND_SSH_KEY  the PRIVATE key whose public half is imported in SiteGround
 #   VERCEL_DEPLOY_HOOK  (optional) Vercel → Project → Settings → Git → Deploy Hooks, so the
 #                       Vercel copy also picks up CMS changes
-# Until SITEGROUND_HOST is set, the build still runs but nothing is uploaded.
+# Until SITEGROUND_HOST is set, the SiteGround job is skipped (the run still shows green).
 #
 # And these repository VARIABLES (same page, "Variables" tab), copied from your local .env.
 # They are public website settings, kept out of the repo only so GitHub's secret scanner
@@ -32,13 +32,14 @@ concurrency:
   cancel-in-progress: false
 
 # Website settings for the build (Vite and scripts/fetch-content.mjs read these).
+# Works whether they were added as Variables or as Secrets.
 env:
-  VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
-  VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
-  VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
-  VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
-  VITE_WEB3FORMS_ACCESS_KEY: ${{ vars.VITE_WEB3FORMS_ACCESS_KEY }}
-  VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
+  VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY || secrets.VITE_FIREBASE_API_KEY }}
+  VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN || secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+  VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID || secrets.VITE_FIREBASE_PROJECT_ID }}
+  VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID || secrets.VITE_FIREBASE_APP_ID }}
+  VITE_WEB3FORMS_ACCESS_KEY: ${{ vars.VITE_WEB3FORMS_ACCESS_KEY || secrets.VITE_WEB3FORMS_ACCESS_KEY || vars.VITE_WEB3FORMS_KEY || secrets.VITE_WEB3FORMS_KEY }}
+  VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY || secrets.VITE_RECAPTCHA_SITE_KEY }}
 
 jobs:
   # Scheduled runs only continue when meta/site in Firestore (touched on every CMS
@@ -48,13 +49,27 @@ jobs:
     outputs:
       changed: ${{ steps.result.outputs.changed }}
       version: ${{ steps.version.outputs.version }}
+      siteground: ${{ steps.setup.outputs.siteground }}
+      vercel: ${{ steps.setup.outputs.vercel }}
     steps:
+      # Until SiteGround is set up, the deploy job is skipped (not failed), so
+      # there are no "workflow failed" emails while the site is only on Vercel.
+      - name: What is set up?
+        id: setup
+        env:
+          SG_HOST: ${{ secrets.SITEGROUND_HOST }}
+          VERCEL_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$SG_HOST" ]; then echo "siteground=true" >> "$GITHUB_OUTPUT"
+          else echo "siteground=false" >> "$GITHUB_OUTPUT"; echo "SiteGround is not set up yet: nothing will be uploaded."; fi
+          if [ -n "$VERCEL_HOOK" ]; then echo "vercel=true" >> "$GITHUB_OUTPUT"; else echo "vercel=false" >> "$GITHUB_OUTPUT"; fi
+
       - name: Read CMS version
         id: version
         run: |
           PROJECT="$VITE_FIREBASE_PROJECT_ID"
           KEY="$VITE_FIREBASE_API_KEY"
-          if [ -z "$PROJECT" ]; then echo "::warning::Repository variable VITE_FIREBASE_PROJECT_ID is not set."; fi
+          if [ -z "$PROJECT" ]; then echo "::warning::VITE_FIREBASE_PROJECT_ID is not set (GitHub → Settings → Secrets and variables → Actions)."; fi
           V=""
           if [ -n "$PROJECT" ]; then
             V=$(curl -fsS "https://firestore.googleapis.com/v1/projects/$PROJECT/databases/(default)/documents/meta/site?key=$KEY" \
@@ -79,17 +94,15 @@ jobs:
             echo "No CMS changes since the last deploy."; echo "changed=false" >> "$GITHUB_OUTPUT"
           else echo "CMS content changed."; echo "changed=true" >> "$GITHUB_OUTPUT"; fi
 
+  # Builds and uploads to SiteGround. Skipped until the SITEGROUND_* secrets exist.
   deploy:
     needs: check
-    if: needs.check.outputs.changed == 'true'
+    if: needs.check.outputs.changed == 'true' && needs.check.outputs.siteground == 'true'
     runs-on: ubuntu-latest
-    env:
-      CONFIGURED: ${{ secrets.SITEGROUND_HOST != '' }}
-      HAS_VERCEL_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -99,7 +112,7 @@ jobs:
       - name: Check website settings
         run: |
           if [ -z "$VITE_FIREBASE_PROJECT_ID" ] || [ -z "$VITE_FIREBASE_API_KEY" ]; then
-            echo "::error::Add the VITE_* repository variables (Settings → Secrets and variables → Actions → Variables). See the top of this file."
+            echo "::error::Add the VITE_* values (GitHub → Settings → Secrets and variables → Actions). See the top of this file."
             exit 1
           fi
 
@@ -107,12 +120,7 @@ jobs:
       # robots.txt, 404.html and .htaccess into dist/
       - run: npm run build
 
-      - name: Skip upload (SiteGround secrets not set yet)
-        if: env.CONFIGURED != 'true'
-        run: echo "::warning::SiteGround secrets are not configured — build checked, nothing uploaded."
-
       - name: Set up SSH key
-        if: env.CONFIGURED == 'true'
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SITEGROUND_SSH_KEY }}" > ~/.ssh/siteground
@@ -122,23 +130,33 @@ jobs:
       # --delete removes files that no longer exist in the build, but never touches
       # .well-known (SSL certificate checks) or anything SiteGround keeps beside the site.
       - name: Upload to SiteGround
-        if: env.CONFIGURED == 'true'
         run: |
           rsync -az --delete \
             --exclude ".well-known/" \
             -e "ssh -i ~/.ssh/siteground -p ${{ secrets.SITEGROUND_PORT }}" \
             dist/ "${{ secrets.SITEGROUND_USER }}@${{ secrets.SITEGROUND_HOST }}:${{ secrets.SITEGROUND_PATH }}"
 
-      # Pushes to main already redeploy Vercel; CMS changes need the hook.
+  # Pushes to main already redeploy Vercel; CMS changes need the (optional) deploy hook.
+  vercel:
+    needs: check
+    if: needs.check.outputs.changed == 'true' && needs.check.outputs.vercel == 'true' && github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
       - name: Rebuild Vercel copy
-        if: env.HAS_VERCEL_HOOK == 'true' && github.event_name != 'push'
         run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" > /dev/null
 
-      - name: Remember deployed CMS version
-        run: echo "${{ needs.check.outputs.version }}" > .cms-version
+  # Remembers which CMS version went live, so the 30-minute check doesn't redeploy it again.
+  remember:
+    needs: [check, deploy, vercel]
+    if: >-
+      always() && needs.check.outputs.changed == 'true' && needs.check.outputs.version != 'none'
+      && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+      && (needs.deploy.result == 'success' || needs.vercel.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ needs.check.outputs.version }}" > .cms-version
 
       - uses: actions/cache/save@v4
-        if: needs.check.outputs.version != 'none'
         with:
           path: .cms-version
           key: cms-version-${{ needs.check.outputs.version }}
