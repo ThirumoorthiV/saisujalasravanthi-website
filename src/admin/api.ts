@@ -34,8 +34,52 @@ export async function getItem(name: CollectionName, id: string): Promise<Item | 
   return snap.exists() ? ({ ...snap.data(), id: snap.id } as Item) : null;
 }
 
-/** Tells the deploy workflow that the website needs rebuilding. */
+/** Records that the website needs rebuilding (the deploy workflow checks this as a backup). */
 const touchSite = () => setDoc(doc(db, "meta", "site"), { updatedAt: serverTimestamp() }, { merge: true });
+
+// --- Automatic website update -----------------------------------------------
+// After every save or delete, the CMS asks Vercel to rebuild the website, so changes
+// are live in ~2–3 minutes. The Vercel deploy hook URL is kept in Firestore
+// (settings/deploy → hookUrl), readable by signed-in staff only, never in the code.
+// Set it up once in the Firebase console (see README).
+
+let hookUrl: Promise<string> | null = null;
+const getHookUrl = () =>
+  (hookUrl ??= getDoc(doc(db, "settings", "deploy"))
+    .then((snap) => {
+      const url = String(snap.data()?.hookUrl ?? "").trim();
+      return url.startsWith("https://api.vercel.com/") ? url : "";
+    })
+    .catch(() => ""));
+
+const GAP_MS = 60_000; // at most one rebuild a minute, so several quick edits don't start several builds
+let lastRebuild = 0;
+let pending: ReturnType<typeof setTimeout> | null = null;
+
+function callHook(url: string) {
+  lastRebuild = Date.now();
+  // sendBeacon still goes out if the person closes the tab straight after saving.
+  const sent = navigator.sendBeacon?.(url);
+  if (!sent) fetch(url, { method: "POST", mode: "no-cors", keepalive: true }).catch(() => {});
+  // Lets the scheduled GitHub check know this change is already on its way (no second rebuild).
+  setDoc(doc(db, "meta", "site"), { rebuildRequestedAt: serverTimestamp() }, { merge: true }).catch(() => {});
+}
+
+/** Returns true if the website will update automatically in a few minutes. */
+async function rebuildWebsite(): Promise<boolean> {
+  const url = await getHookUrl();
+  if (!url) return false;
+  const wait = lastRebuild + GAP_MS - Date.now();
+  if (wait <= 0) callHook(url);
+  else if (!pending) {
+    // A rebuild started less than a minute ago and may have missed this change: run one more after it.
+    pending = setTimeout(() => {
+      pending = null;
+      callHook(url);
+    }, wait);
+  }
+  return true;
+}
 
 export async function saveItem(def: CollectionDef, id: string | null, item: Record<string, unknown>, published: boolean) {
   const ref = id ? doc(db, def.name, id) : def.idField ? doc(db, def.name, String(item[def.idField])) : doc(collection(db, def.name));
@@ -46,12 +90,13 @@ export async function saveItem(def: CollectionDef, id: string | null, item: Reco
   if (def.name === "gallery") delete data.id;
   await setDoc(ref, data);
   await touchSite();
-  return ref.id;
+  return { id: ref.id, autoUpdate: await rebuildWebsite() };
 }
 
 export async function deleteItem(name: CollectionName, id: string) {
   await deleteDoc(doc(db, name, id));
   await touchSite();
+  await rebuildWebsite();
 }
 
 // --- Site status ------------------------------------------------------------
@@ -62,6 +107,8 @@ export interface SiteMeta {
   /** Which collections the website is built from; the others use the built-in content. */
   collections?: Partial<Record<CollectionName, boolean>>;
   updatedAt?: Timestamp;
+  /** When the CMS last asked Vercel to rebuild. */
+  rebuildRequestedAt?: Timestamp;
 }
 
 const FIRST_IMPORT: CollectionName[] = ["stories", "events", "gallery"];
@@ -96,6 +143,7 @@ export async function importBuiltInContent(names: CollectionName[]) {
     { merge: true },
   );
   await batch.commit();
+  await rebuildWebsite();
   return added;
 }
 

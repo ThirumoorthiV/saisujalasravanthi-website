@@ -221,12 +221,18 @@ export function ContentEditor() {
     setBusy(true);
     setMessage(null);
     try {
-      const savedId = await saveItem(def, id ?? null, item, publish);
+      const { id: savedId, autoUpdate } = await saveItem(def, id ?? null, item, publish);
       setDirty(false);
       setOriginal({ ...item, id: savedId, published: publish });
       setMessage({
         tone: "success",
-        text: publish ? "Published. It will appear on the website within about 15 minutes." : "Draft saved. It is not on the website.",
+        text: publish
+          ? autoUpdate
+            ? "Published. The website is updating now; your change will be live in about 2–3 minutes."
+            : "Published. It will appear on the website within about 15 minutes."
+          : original?.published
+            ? `Moved to drafts. It will be removed from the website in about ${autoUpdate ? "2–3" : "15"} minutes.`
+            : "Draft saved. It is not on the website.",
       });
       if (!id) navigate(`/${def.name}/edit/${savedId}`, { replace: true });
     } catch (err) {

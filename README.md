@@ -80,6 +80,12 @@ downloads on demand. Every CMS save updates
 `meta/site`; the "Update website" workflow checks it every 5 minutes and rebuilds when it has changed.
 For an immediate update: GitHub → Actions → Update website → Run workflow.
 
+**Automatic update on save (Vercel):** after every publish, update or delete, the CMS calls
+the Vercel deploy hook, so changes are live in ~2–3 minutes (GitHub's schedule is a backup;
+it often runs late). One-time setup in the Firebase console → Firestore → Start collection
+`settings` → document ID `deploy` → field `hookUrl` (string) = the Vercel deploy hook URL.
+Only signed-in staff can read it (firestore.rules).
+
 Until an admin clicks **Import current content** on the CMS dashboard, the site uses the built-in
 `SEED_*` lists in `src/data/`. After that the CMS is the source of truth, and edits to the `SEED_*`
 lists no longer show on the site.

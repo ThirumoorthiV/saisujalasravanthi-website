@@ -75,6 +75,14 @@ service cloud.firestore {
       allow write: if isStaff();
     }
 
+    // CMS settings. settings/deploy.hookUrl = the Vercel deploy hook the CMS calls after
+    // every save, so the website updates in ~2–3 minutes. Staff only, never public.
+    // Created once in the Firebase console (the console isn't limited by these rules).
+    match /settings/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
     match /staff/{uid} {
       allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
       allow write: if isAdmin()
