@@ -156,6 +156,8 @@ export interface Partner {
   logo: string;
   website?: string;
   permissionGranted: boolean;
+  /** Position on the Our Partners page (CMS). */
+  order?: number;
 }
 
 export interface Report {
@@ -194,3 +196,24 @@ export type IconName =
   | "Handshake"
   | "ShieldPlus"
   | "Scissors";
+
+export type SocialPlatform =
+  | "Facebook"
+  | "Instagram"
+  | "YouTube"
+  | "LinkedIn"
+  | "X (Twitter)"
+  | "WhatsApp"
+  | "Telegram"
+  | "Threads"
+  | "Pinterest"
+  | "Other";
+
+/** A "Follow us" link (CMS collection `social`, managed by admins). */
+export interface SocialLink {
+  platform: SocialPlatform;
+  href: string;
+  /** Name shown for "Other", e.g. "Our Blog". */
+  label?: string;
+  order: number;
+}

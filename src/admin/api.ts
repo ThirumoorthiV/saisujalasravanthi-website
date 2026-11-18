@@ -3,6 +3,7 @@
 import { deleteApp, initializeApp } from "firebase/app";
 import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signOut } from "firebase/auth";
 import {
+  addDoc,
   Bytes,
   collection,
   deleteDoc,
@@ -15,14 +16,21 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  startAfter,
+  type QueryDocumentSnapshot,
   updateDoc,
   Timestamp,
   writeBatch,
 } from "firebase/firestore";
 import { app, db } from "@/lib/firebase";
-import { COLLECTIONS, type CollectionDef, type CollectionName } from "./collections";
+import { COLLECTIONS, diffItems, type CollectionDef, type CollectionName, type FieldChange } from "./collections";
 
-export type Item = Record<string, unknown> & { id: string; published: boolean; updatedAt?: Timestamp };
+export type Item = Record<string, unknown> & {
+  id: string;
+  published: boolean;
+  updatedAt?: Timestamp;
+  updatedBy?: { uid: string; name: string };
+};
 
 export async function listItems(name: CollectionName): Promise<Item[]> {
   const snap = await getDocs(collection(db, name));
@@ -81,22 +89,128 @@ async function rebuildWebsite(): Promise<boolean> {
   return true;
 }
 
-export async function saveItem(def: CollectionDef, id: string | null, item: Record<string, unknown>, published: boolean) {
+// --- Activity log -----------------------------------------------------------
+// Every change made in the CMS is recorded in `activity` (admins can read it; nobody
+// can edit or delete it). Content items also carry `updatedBy`, which firestore.rules
+// require to be the person actually signed in.
+
+export type ActivityAction =
+  | "created"
+  | "draft"
+  | "published"
+  | "updated"
+  | "unpublished"
+  | "deleted"
+  | "imported"
+  | "staff_added"
+  | "staff_role"
+  | "staff_removed";
+
+export interface ActivityEntry {
+  id: string;
+  at?: Timestamp;
+  uid: string;
+  name: string;
+  role: StaffMember["role"];
+  action: ActivityAction;
+  /** A collection name, or "staff" */
+  section: CollectionName | "staff";
+  itemId: string;
+  title: string;
+  changes?: FieldChange[];
+}
+
+export interface UpdatedBy {
+  uid: string;
+  name: string;
+}
+
+let actor: StaffMember | null = null;
+/** Called by the CMS shell with the signed-in person, so changes can be credited to them. */
+export const setActor = (staff: StaffMember | null) => {
+  actor = staff;
+};
+const me = (): StaffMember => {
+  if (!actor) throw new Error("You're not signed in. Please refresh the page.");
+  return actor;
+};
+const updatedBy = (): UpdatedBy => ({ uid: me().uid, name: me().name });
+
+async function logActivity(entry: Omit<ActivityEntry, "id" | "at" | "uid" | "name" | "role">) {
+  const { uid, name, role } = me();
+  try {
+    await addDoc(collection(db, "activity"), {
+      ...entry,
+      title: entry.title.slice(0, 200) || "(untitled)",
+      changes: entry.changes?.slice(0, 40) ?? [],
+      uid,
+      name,
+      role,
+      at: serverTimestamp(),
+    });
+  } catch (err) {
+    // Never block the actual change because the log couldn't be written (e.g. rules not published yet).
+    console.warn("Could not record this change in the activity log:", err);
+  }
+}
+
+export async function listActivity(pageSize: number, after?: QueryDocumentSnapshot) {
+  const q = after
+    ? query(collection(db, "activity"), orderBy("at", "desc"), startAfter(after), limit(pageSize))
+    : query(collection(db, "activity"), orderBy("at", "desc"), limit(pageSize));
+  const snap = await getDocs(q);
+  return {
+    entries: snap.docs.map((d) => ({ ...d.data(), id: d.id }) as ActivityEntry),
+    cursor: snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : undefined,
+  };
+}
+
+const itemTitle = (def: CollectionDef, item: Record<string, unknown> | null | undefined) =>
+  String(item?.[def.titleField] ?? (def.idField ? item?.[def.idField] : "") ?? "").trim();
+
+export async function saveItem(
+  def: CollectionDef,
+  id: string | null,
+  item: Record<string, unknown>,
+  published: boolean,
+  /** The item as it was before this save (null for a new one), for the activity log. */
+  before: Item | null = null,
+) {
   const ref = id ? doc(db, def.name, id) : def.idField ? doc(db, def.name, String(item[def.idField])) : doc(collection(db, def.name));
   if (!id && (await getDoc(ref)).exists()) {
     throw new Error(`Another ${def.singular} already uses this web address. Please change it.`);
   }
-  const data: Record<string, unknown> = { ...item, published, updatedAt: serverTimestamp() };
+  const data: Record<string, unknown> = { ...item, published, updatedAt: serverTimestamp(), updatedBy: updatedBy() };
   if (def.name === "gallery") delete data.id;
   await setDoc(ref, data);
   await touchSite();
-  return { id: ref.id, autoUpdate: await rebuildWebsite() };
+  const autoUpdate = await rebuildWebsite();
+
+  const changes = diffItems(def, before, item);
+  const action: ActivityAction = !before
+    ? published
+      ? "created"
+      : "draft"
+    : before.published && !published
+      ? "unpublished"
+      : !before.published && published
+        ? "published"
+        : published
+          ? "updated"
+          : "draft";
+  if (before && !changes.length && before.published === published) {
+    // Saved without changing anything: nothing worth recording.
+  } else {
+    await logActivity({ action, section: def.name, itemId: ref.id, title: itemTitle(def, item), changes: before ? changes : [] });
+  }
+  return { id: ref.id, autoUpdate };
 }
 
-export async function deleteItem(name: CollectionName, id: string) {
-  await deleteDoc(doc(db, name, id));
+export async function deleteItem(def: CollectionDef, id: string, before: Item | null = null) {
+  await deleteDoc(doc(db, def.name, id));
   await touchSite();
   await rebuildWebsite();
+  await logActivity({ action: "deleted", section: def.name, itemId: id, title: itemTitle(def, before) || id });
 }
 
 // --- Site status ------------------------------------------------------------
@@ -133,7 +247,7 @@ export async function importBuiltInContent(names: CollectionName[]) {
   for (const name of names) {
     for (const [id, data] of COLLECTIONS[name].seed()) {
       if ((await getDoc(doc(db, name, id))).exists()) continue;
-      batch.set(doc(db, name, id), { ...data, published: true, updatedAt: serverTimestamp() });
+      batch.set(doc(db, name, id), { ...data, published: true, updatedAt: serverTimestamp(), updatedBy: updatedBy() });
       added++;
     }
   }
@@ -144,6 +258,12 @@ export async function importBuiltInContent(names: CollectionName[]) {
   );
   await batch.commit();
   await rebuildWebsite();
+  await logActivity({
+    action: "imported",
+    section: names[0],
+    itemId: names.join(","),
+    title: `${added} items: ${names.map((n) => COLLECTIONS[n].label).join(", ")}`,
+  });
   return added;
 }
 
@@ -262,7 +382,20 @@ export async function listStaff(): Promise<StaffMember[]> {
   return snap.docs.map((d) => ({ ...d.data(), uid: d.id }) as StaffMember);
 }
 
-export const saveStaff = ({ uid, ...rest }: StaffMember) => setDoc(doc(db, "staff", uid), rest);
+const ROLE_LABEL = { admin: "Admin", editor: "Editor" } as const;
+
+/** Adds someone (previous = undefined) or changes their role. */
+export async function saveStaff({ uid, ...rest }: StaffMember, previous?: StaffMember) {
+  await setDoc(doc(db, "staff", uid), rest);
+  if (previous && previous.role === rest.role) return;
+  await logActivity({
+    action: previous ? "staff_role" : "staff_added",
+    section: "staff",
+    itemId: uid,
+    title: `${rest.name} (${rest.email})`,
+    changes: [{ field: "Role", before: previous ? ROLE_LABEL[previous.role] : "No access", after: ROLE_LABEL[rest.role] }],
+  });
+}
 
 /** Anyone can change their own display name and photo (and nothing else) in the staff list. */
 export const saveOwnName = (uid: string, name: string) => updateDoc(doc(db, "staff", uid), { name });
@@ -304,7 +437,16 @@ export async function createStaffAccount(member: Omit<StaffMember, "uid">): Prom
     await deleteApp(temp);
   }
 }
-export const removeStaff = (uid: string) => deleteDoc(doc(db, "staff", uid));
+export async function removeStaff(member: StaffMember) {
+  await deleteDoc(doc(db, "staff", member.uid));
+  await logActivity({
+    action: "staff_removed",
+    section: "staff",
+    itemId: member.uid,
+    title: `${member.name} (${member.email})`,
+    changes: [{ field: "Role", before: ROLE_LABEL[member.role], after: "No access" }],
+  });
+}
 
 export interface Submission {
   id: string;

@@ -62,7 +62,7 @@ export function PageHeader({
         <h1 className="mt-3 max-w-3xl font-heading text-[28px] font-bold leading-tight sm:mt-4 sm:text-[32px] md:text-5xl">{title}</h1>
         <div className="mt-3 h-0.5 w-16 bg-gold-500 sm:mt-4" />
         {intro && <p className="mt-3 max-w-2xl text-base text-maroon-100 sm:mt-4 sm:text-lg">{intro}</p>}
-        {children && <div className="mt-6 flex flex-wrap gap-3">{children}</div>}
+        {children && <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap">{children}</div>}
       </div>
     </header>
   );

@@ -106,7 +106,8 @@ export function CsrProjects() {
         <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           {CSR_PROJECTS.map((p) => (
             <MediaCard key={p.name} image={p.image} imageAlt={p.name} meta={<Tag>{p.theme}</Tag>} title={p.name} text={p.objective} cta="Discuss this project" to="/csr-partnerships/csr-enquiry/">
-              <dl className="mt-5 grid gap-3 border-t border-ink-200 pt-5 text-sm sm:grid-cols-2">
+              {/* 2 columns of details only when the card is wide: one card per row (sm) or wide screens (xl). */}
+              <dl className="mt-5 grid gap-3 border-t border-ink-200 pt-5 text-sm sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
                 {[
                   { icon: MapPin, label: "Location", value: p.location },
                   { icon: Users, label: "Target beneficiaries", value: p.beneficiaries },
@@ -169,14 +170,29 @@ export function CsrPartners() {
       <Section tone="cream">
         {partners.length ? (
           <ul className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-3 lg:grid-cols-4">
-            {partners.map((p) => (
-              <li key={p.name} className="flex h-full flex-col items-center justify-center rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 transition hover:-translate-y-1 hover:shadow-lg">
-                <div className="flex h-20 w-full items-center justify-center">
-                  <img src={p.logo} alt={p.name} loading="lazy" className="max-h-20 w-auto max-w-full object-contain" />
-                </div>
-                <p className="mt-4 text-center text-sm font-semibold text-ink-900">{p.name}</p>
-              </li>
-            ))}
+            {partners.map((p) => {
+              const card = "flex h-full flex-col items-center justify-center rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 transition hover:-translate-y-1 hover:shadow-lg";
+              const body = (
+                <>
+                  <div className="flex h-20 w-full items-center justify-center">
+                    <img src={p.logo} alt={p.name} loading="lazy" className="max-h-20 w-auto max-w-full object-contain" />
+                  </div>
+                  <p className="mt-4 text-center text-sm font-semibold text-ink-900">{p.name}</p>
+                </>
+              );
+              return (
+                <li key={p.name} className="h-full">
+                  {/* With a website (added in the CMS), the card links to it. */}
+                  {p.website ? (
+                    <a href={p.website} target="_blank" rel="noopener noreferrer" className={card} aria-label={`${p.name} (opens their website in a new tab)`}>
+                      {body}
+                    </a>
+                  ) : (
+                    <div className={card}>{body}</div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="flex items-start gap-2 rounded-xl bg-white p-6 text-ink-600 ring-1 ring-ink-200">
@@ -199,7 +215,7 @@ export function CsrEnquiry() {
       <Section tone="cream">
         <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-[1fr_1.6fr]">
           <div className="space-y-6">
-            <ImageFrame src="/images/site/pediatric-heart-screening-niloufer.webp" alt="Pediatric heart screening supported by CSR" className="rounded-xl" />
+            <ImageFrame src="/images/site/pediatric-heart-screening-niloufer.webp" alt="Pediatric heart screening supported by CSR" className="hidden rounded-xl lg:block" />
             <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
               <h2 className="font-heading text-xl font-semibold text-maroon-700">Prefer to talk directly?</h2>
               <ul className="mt-4 space-y-3 text-ink-900">

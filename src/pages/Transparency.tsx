@@ -53,12 +53,12 @@ export function TransparencyOverview() {
             { icon: Award, title: "Tax exemptions", rows: ["12A registration: —", "80G registration: —", "CSR-1 registration: —"] },
             { icon: Scale, title: "Governance", rows: ["Board of Trustees", "Annual statutory audit", `FCRA Reg. No. ${DONATION.fcra.registrationNo}`] },
           ].map(({ icon: I, title, rows }) => (
-            <div key={title} className="flex h-full flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
+            <div key={title} className="flex h-full flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 md:p-5 lg:p-6">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-maroon-100 text-maroon-700">
                 <I aria-hidden />
               </span>
-              <h2 className="mt-4 font-heading text-xl font-semibold text-maroon-700">{title}</h2>
-              <ul className="mt-3 space-y-1 text-ink-900">
+              <h2 className="mt-4 font-heading text-xl font-semibold text-maroon-700 md:text-lg lg:text-xl">{title}</h2>
+              <ul className="mt-3 space-y-1 break-words text-ink-900 md:text-[15px] lg:text-base">
                 {rows.map((r) => (
                   <li key={r}>{r}</li>
                 ))}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStaff } from "./AdminApp";
+import { RecentActivityCard } from "./Activity";
 import { getSiteMeta, importBuiltInContent, isImported, listItems, type SiteMeta } from "./api";
 import { COLLECTION_LIST, type CollectionDef, type CollectionName } from "./collections";
 import { Button, buttonClass, Card, errorMessage, Notice, PageTitle, Spinner } from "./ui";
@@ -9,11 +10,13 @@ type Counts = Partial<Record<CollectionName, { published: number; drafts: number
 
 const GROUPS: { key: CollectionDef["group"]; title: string; text: string }[] = [
   { key: "updates", title: "Regular updates", text: "Blog posts (including Beneficiary & Volunteer Stories and Media & Press), Events and Gallery photos." },
-  { key: "pages", title: "Website pages", text: "Our Programmes, Leadership and Our Network." },
+  { key: "pages", title: "Website pages", text: "Our Programmes, Leadership, Our Network, Our Partners and the Follow us social links." },
 ];
 
 export function Dashboard() {
   const staff = useStaff();
+  // Sections this person can edit (Social media is admin-only).
+  const sections = COLLECTION_LIST.filter((d) => !d.adminOnly || staff.role === "admin");
   const [meta, setMeta] = useState<SiteMeta | null>();
   const [counts, setCounts] = useState<Counts>();
   const [error, setError] = useState("");
@@ -24,7 +27,7 @@ export function Dashboard() {
     try {
       setMeta(await getSiteMeta());
       const entries = await Promise.all(
-        COLLECTION_LIST.map(async (def) => {
+        sections.map(async (def) => {
           const items = await listItems(def.name);
           const published = items.filter((i) => i.published).length;
           return [def.name, { published, drafts: items.length - published }] as const;
@@ -55,7 +58,7 @@ export function Dashboard() {
   };
 
   if (!counts && !error) return <Spinner />;
-  const notImported = COLLECTION_LIST.filter((d) => !isImported(meta, d.name));
+  const notImported = sections.filter((d) => !isImported(meta, d.name));
 
   return (
     <>
@@ -86,12 +89,14 @@ export function Dashboard() {
           </Notice>
         ))}
 
+      {staff.role === "admin" && <RecentActivityCard />}
+
       {GROUPS.map((group) => (
         <section key={group.key} className="mb-8">
           <h2 className="font-heading text-xl font-bold text-maroon-900">{group.title}</h2>
           <p className="mb-3 text-sm text-ink-600">{group.text}</p>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {COLLECTION_LIST.filter((d) => d.group === group.key).map((def) => {
+            {sections.filter((d) => d.group === group.key).map((def) => {
               const c = counts?.[def.name];
               return (
                 <Card key={def.name} className="flex flex-col">

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Children, isValidElement, type ReactNode } from "react";
 import { ArrowRight, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -74,10 +74,39 @@ export function SectionHeading({
       {heading}
       <Link
         to={action.to}
-        className={`inline-flex shrink-0 items-center gap-1 font-semibold ${light ? "text-gold-100 hover:text-white" : "text-maroon-700 hover:text-maroon-600"}`}
+        className={`inline-flex min-h-[44px] shrink-0 items-center gap-1 self-start font-semibold md:min-h-0 md:self-auto ${light ? "text-gold-100 hover:text-white" : "text-maroon-700 hover:text-maroon-600"}`}
       >
         {action.label} <ArrowRight size={16} aria-hidden />
       </Link>
+    </div>
+  );
+}
+
+/**
+ * A grid of cards that adapts to how many there are, so no row is left half empty:
+ * 2 per row on tablets, 3 on desktop. A lone card on the last row is centred.
+ * `trim`: on tablets drop an odd last card instead (for "latest …" sections with a "see all" link).
+ */
+export function CardGrid({ children, trim = false }: { children: ReactNode; trim?: boolean }) {
+  const items = Children.toArray(children);
+  const n = items.length;
+  return (
+    // Exactly 2: two centred cards on desktop instead of 2 of 3 columns.
+    <div className={`grid gap-4 sm:grid-cols-2 sm:gap-6 ${n === 2 ? "lg:mx-auto lg:max-w-4xl" : "lg:grid-cols-3"}`}>
+      {items.map((child, i) => {
+        const last = i === n - 1;
+        const cls = [
+          last && n % 2 === 1 && (trim && n > 1 ? "sm:max-lg:hidden" : "sm:max-lg:col-span-2 sm:max-lg:mx-auto sm:max-lg:w-[calc(50%-0.75rem)]"),
+          last && n % 3 === 1 && "lg:col-start-2",
+        ]
+          .filter(Boolean)
+          .join(" ");
+        return (
+          <div key={isValidElement(child) && child.key != null ? child.key : i} className={`min-w-0 ${cls}`}>
+            {child}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -129,6 +158,6 @@ export function ImagePlaceholder({
 
 export function PendingBadge({ children = "Pending confirmation" }: { children?: ReactNode }) {
   return (
-    <span className="inline-block rounded-full bg-gold-100 px-2 py-0.5 text-xs font-semibold text-maroon-900">{children}</span>
+    <span className="inline-block whitespace-nowrap rounded-full bg-gold-100 px-2 py-0.5 text-xs font-semibold text-maroon-900">{children}</span>
   );
 }

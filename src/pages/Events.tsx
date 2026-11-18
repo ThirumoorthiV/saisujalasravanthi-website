@@ -53,14 +53,15 @@ export function EventsList() {
             event reports are added.
           </p>
         )}
-        <div role="tablist" aria-label="Event status" className="mb-6 inline-flex rounded-lg bg-white p-1 ring-1 ring-ink-200">
+        {/* Phones: two equal halves across the full width. Larger screens: compact pill. */}
+        <div role="tablist" aria-label="Event status" className="mb-6 grid w-full grid-cols-2 gap-1 rounded-lg bg-white p-1 ring-1 ring-ink-200 sm:inline-grid sm:w-auto">
           {(["Upcoming", "Completed"] as const).map((s) => (
             <button
               key={s}
               role="tab"
               aria-selected={status === s}
               onClick={() => tab.set("status", s)}
-              className={`min-h-[44px] rounded-md px-6 font-semibold transition ${
+              className={`min-h-[44px] whitespace-nowrap rounded-md px-4 text-center font-semibold transition sm:px-8 ${
                 status === s ? "bg-maroon-700 text-white" : "text-maroon-700 hover:bg-maroon-50"
               }`}
             >

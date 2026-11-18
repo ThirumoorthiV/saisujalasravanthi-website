@@ -54,7 +54,7 @@ export function StaffPage() {
       return setMessage({ tone: "error", text: "That doesn't look like a User ID. Copy it from the CMS sign-in page or Firebase → Authentication → Users." });
     }
     try {
-      await saveStaff(member);
+      await saveStaff(member, staff?.find((s) => s.uid === member.uid));
       setMessage({ tone: "success", text: `${member.name} can now sign in to the CMS.` });
       setForm({ uid: "", name: "", email: "", role: "editor" });
       load();
@@ -81,8 +81,8 @@ export function StaffPage() {
     )
       return;
     try {
-      if (role === null) await removeStaff(member.uid);
-      else await saveStaff({ ...member, role });
+      if (role === null) await removeStaff(member);
+      else await saveStaff({ ...member, role }, member);
       load();
     } catch (err) {
       setMessage({ tone: "error", text: errorMessage(err) });

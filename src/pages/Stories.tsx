@@ -88,8 +88,9 @@ export function StoriesList({ page }: { page?: string }) {
               to={`/stories/${featured.slug}/`}
               className="group mb-10 grid overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-ink-200/70 transition hover:shadow-lg md:grid-cols-2"
             >
-              <ImageFrame src={featured.cover} alt={featured.coverAlt} className="h-full" />
-              <div className="flex flex-col justify-center p-6 md:p-8">
+              {/* Phones: 4:3 photo on top. Side by side: the photo fills its half at the text's height (no fixed ratio, which made it overlap the text). */}
+              <ImageFrame src={featured.cover} alt={featured.coverAlt} aspect="aspect-[4/3] md:aspect-auto" className="min-w-0 md:h-full md:min-h-[300px]" />
+              <div className="flex min-w-0 flex-col justify-center p-6 md:p-8">
                 <div className="flex flex-wrap items-center gap-2 text-sm text-ink-600">
                   <Tag>{featured.category}</Tag>
                   <time dateTime={featured.publishDate}>{formatDate(featured.publishDate)}</time>
@@ -128,7 +129,9 @@ export function StoryDetail() {
   if (!story) return <Navigate to="/stories/" replace />;
   const programme = getCategory(story.programme);
   const event = story.relatedEvent ? getEvent(story.relatedEvent) : undefined;
-  const related = STORIES.filter((s) => s.slug !== story.slug && s.programme === story.programme).slice(0, 3);
+  // Same programme first, topped up with the latest other stories so the row is always full (3).
+  const others = STORIES.filter((s) => s.slug !== story.slug);
+  const related = [...others.filter((s) => s.programme === story.programme), ...others.filter((s) => s.programme !== story.programme)].slice(0, 3);
   const crumbs = [ROOT, STORIES_CRUMB, { name: story.title, path: `/stories/${story.slug}/` }];
 
   const articleSchema = {
@@ -225,9 +228,12 @@ export function StoryDetail() {
         {related.length > 0 && (
           <div className="mt-16">
             <h2 className="mb-6 font-heading text-2xl font-semibold text-maroon-700">More stories</h2>
-            <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
-              {related.map((s) => (
-                <StoryCard key={s.slug} story={s} />
+            {/* Tablets: 2 per row (the 3rd is hidden so no card sits alone); desktop: 3. */}
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {related.map((s, i) => (
+                <div key={s.slug} className={i === 2 ? "sm:max-lg:hidden" : ""}>
+                  <StoryCard story={s} />
+                </div>
               ))}
             </div>
           </div>

@@ -114,7 +114,7 @@ export function VisionMission() {
         image="/images/site/community-women.webp"
       />
       <Section tone="cream">
-        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           {[
             {
               icon: Eye,
@@ -132,7 +132,7 @@ export function VisionMission() {
               text: "Love · Peace · Truth · Right Conduct · Non-violence. Every service is offered free, regardless of caste, creed, religion or economic status.",
             },
           ].map(({ icon: I, title, text }) => (
-            <div key={title} className="flex h-full flex-col rounded-xl border-t-4 border-maroon-700 bg-white p-6 md:p-8 shadow-sm ring-1 ring-ink-200/70">
+            <div key={title} className="flex h-full flex-col rounded-xl border-t-4 border-maroon-700 bg-white p-6 shadow-sm ring-1 ring-ink-200/70 xl:p-8">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-maroon-100 text-maroon-700">
                 <I aria-hidden />
               </span>
@@ -240,8 +240,9 @@ export function Leadership() {
               <blockquote className="font-heading text-xl italic text-ink-900">“{SITE.motto}. {SITE.submotto}.”</blockquote>
             </figure>
           </div>
-          <div className="relative mx-auto w-full max-w-md">
-            <div className="absolute -right-4 -top-4 h-full w-full rounded-2xl bg-gold-500/30" aria-hidden />
+          {/* The gold offset frame stays inside the screen margin on phones. */}
+          <div className="relative mx-auto w-[calc(100%-0.75rem)] max-w-md sm:w-full">
+            <div className="absolute -right-3 -top-3 h-full w-full rounded-2xl bg-gold-500/30 sm:-right-4 sm:-top-4" aria-hidden />
             <ImageFrame src={founder.photo} alt={founder.name} aspect="aspect-[4/5]" className="relative rounded-2xl shadow-lg" eager />
           </div>
         </div>
@@ -350,8 +351,9 @@ export function OurNetwork() {
                 <span className="h-3 w-3 rounded-sm bg-gold-500/45" aria-hidden /> Wider Sai Swasthya network
               </li>
             </ul>
-            <div className="mt-4 flex flex-wrap gap-2 border-t border-ink-200 pt-4" role="group" aria-label="Choose a state">
-              {[{ name: "", label: "All states", count: Object.values(mapCounts).reduce((a, b) => a + b, 0) }, ...mapStates.map((s) => ({ name: s, label: s, count: mapCounts[s] ?? 0 }))].map((s) => {
+            {/* An even 2-column grid ("All states" spans the row when the count is odd); the map card is narrow at every width. */}
+            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-ink-200 pt-4" role="group" aria-label="Choose a state">
+              {[{ name: "", label: "All states", count: Object.values(mapCounts).reduce((a, b) => a + b, 0) }, ...mapStates.map((s) => ({ name: s, label: s, count: mapCounts[s] ?? 0 }))].map((s, i, all) => {
                 const on = values.state === s.name;
                 return (
                   <button
@@ -359,7 +361,9 @@ export function OurNetwork() {
                     type="button"
                     onClick={() => set("state", s.name)}
                     aria-pressed={on}
-                    className={`inline-flex min-h-[40px] items-center gap-2 rounded-full px-4 text-sm font-semibold ring-1 transition-colors ${
+                    className={`inline-flex min-h-[44px] min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-[13px] font-semibold ring-1 transition-colors sm:gap-2 sm:px-4 sm:text-sm ${
+                      i === 0 && all.length % 2 === 1 ? "col-span-2" : ""
+                    } ${
                       on ? "bg-maroon-700 text-white ring-maroon-700" : "bg-white text-maroon-700 ring-ink-200 hover:bg-maroon-50"
                     }`}
                   >

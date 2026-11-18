@@ -4,7 +4,7 @@ import { SITE } from "@/data/site";
 import { STORIES } from "@/data/stories";
 import { ButtonLink } from "@/components/ui/Button";
 import { EventCard, ImageFrame, MediaCard, StoryCard } from "@/components/ui/Cards";
-import { Section, SectionHeading, Tag } from "@/components/ui/Primitives";
+import { CardGrid, Section, SectionHeading, Tag } from "@/components/ui/Primitives";
 import { CsrBand, GetInvolvedCards, ImpactAtAGlance } from "@/components/sections/Shared";
 import { Icon } from "@/lib/icons";
 import { organisationSchema, Seo } from "@/lib/seo";
@@ -42,7 +42,7 @@ export default function Home() {
             <p className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold text-black sm:px-4 sm:py-1.5 sm:text-sm shadow-sm">
               <span className="h-2 w-2 rounded-full bg-maroon-700" aria-hidden /> {SITE.motto} · {SITE.submotto}
             </p>
-            <h1 className="mt-5 font-heading text-[28px] font-bold leading-[1.15] sm:mt-6 sm:text-[32px] md:text-5xl lg:text-[56px]">
+            <h1 className="mt-5 font-heading text-[28px] font-bold leading-[1.15] sm:mt-6 sm:text-[32px] md:text-5xl xl:text-[56px]">
               Serving Communities.
               <br />
               Transforming Lives.
@@ -53,7 +53,7 @@ export default function Home() {
               Through free healthcare, rural development, education and community outreach, Sai Sujala Sravanthi works to create healthier
               and more empowered communities.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
+            <div className="mt-6 grid gap-3 sm:mt-8 sm:flex sm:flex-wrap">
               <ButtonLink to="/programmes/" variant="light">
                 Explore Our Programmes <ArrowRight size={18} aria-hidden />
               </ButtonLink>
@@ -111,11 +111,11 @@ export default function Home() {
       {/* 3. Core areas */}
       <Section tone="tint">
         <SectionHeading eyebrow="What we do" title="Our core areas" align="center" />
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <CardGrid>
           {CORE_AREAS.map((a) => (
             <MediaCard key={a.title} image={a.image} title={a.title} text={a.text} cta="Explore" to={a.to} meta={<Tag><Icon name={a.icon} size={14} /> {a.label}</Tag>} />
           ))}
-        </div>
+        </CardGrid>
       </Section>
 
       {/* 4. Impact */}
@@ -124,21 +124,21 @@ export default function Home() {
       {/* 5. Featured stories */}
       <Section tone="cream">
         <SectionHeading eyebrow="Stories & updates" title="Stories of change" action={{ label: "Read Our Stories", to: "/stories/" }} />
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <CardGrid trim>
           {stories.map((s) => (
             <StoryCard key={s.slug} story={s} />
           ))}
-        </div>
+        </CardGrid>
       </Section>
 
       {/* 6. Latest events */}
       <Section tone="white">
         <SectionHeading eyebrow="Events" title="Camps, drives & community programmes" action={{ label: "All events", to: "/events/" }} />
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <CardGrid trim>
           {events.map((e) => (
             <EventCard key={e.slug} event={e} />
           ))}
-        </div>
+        </CardGrid>
       </Section>
 
       {/* 7. CSR */}

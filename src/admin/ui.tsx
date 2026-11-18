@@ -63,10 +63,18 @@ export function Avatar({ name, photo, className = "h-9 w-9 text-base" }: { name:
   );
 }
 
-export const Spinner =({ label = "Loading…" }: { label?: string }) => (
-  <p className="py-10 text-center text-ink-600" role="status">
-    {label}
-  </p>
+/**
+ * Loading indicator: a maroon spinning ring with a label, centred.
+ * fullScreen: centred in the whole window (while the CMS starts); otherwise in the page area.
+ */
+export const Spinner = ({ label = "Loading…", fullScreen = false }: { label?: string; fullScreen?: boolean }) => (
+  <div role="status" aria-live="polite" className={`flex flex-col items-center justify-center gap-4 ${fullScreen ? "min-h-screen bg-cream" : "min-h-[50vh]"}`}>
+    <span className="relative flex h-12 w-12" aria-hidden>
+      <span className="absolute inset-0 rounded-full border-4 border-maroon-100" />
+      <span className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-maroon-700" />
+    </span>
+    <p className="text-[15px] font-medium text-ink-600">{label}</p>
+  </div>
 );
 
 export const inputClass =
@@ -74,10 +82,23 @@ export const inputClass =
 
 export const errorMessage = (err: unknown) => {
   const e = err as { code?: string; message?: string };
-  if (e.code === "permission-denied") return "You don't have permission to do this. Ask an admin to check your access.";
+  if (e.code === "permission-denied")
+    return "You don't have permission to do this. Ask an admin to check your access. (Admins: if this appears after a CMS update, publish the latest firestore.rules in Firebase console → Firestore Database → Rules.)";
   if (e.code === "unavailable") return "Can't reach the server. Check your internet connection and try again.";
   return e.message || "Something went wrong. Please try again.";
 };
 
-export const formatDate = (iso?: string) =>
+const RELATIVE = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+/** "just now", "5 minutes ago", "yesterday", "3 days ago"; older dates as "12 Nov 2026". */
+export function timeAgo(date: Date) {
+  const seconds = Math.round((date.getTime() - Date.now()) / 1000);
+  const abs = Math.abs(seconds);
+  if (abs < 45) return "just now";
+  if (abs < 3600) return RELATIVE.format(Math.round(seconds / 60), "minute");
+  if (abs < 86_400) return RELATIVE.format(Math.round(seconds / 3600), "hour");
+  if (abs < 7 * 86_400) return RELATIVE.format(Math.round(seconds / 86_400), "day");
+  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
+export const formatDate =(iso?: string) =>
   iso ? new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";

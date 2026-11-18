@@ -16,7 +16,11 @@ const ROOT = { name: "Home", path: "/" };
 const IMPACT = { name: "Our Impact", path: "/impact/" };
 
 export function ImpactGlance() {
-  const stories = STORIES.filter((s) => s.change || s.category === "Healthcare Stories").slice(0, 3);
+  // Beneficiary/healthcare stories first, topped up with others so the row is always full.
+  const stories = [
+    ...STORIES.filter((s) => s.change || s.category === "Healthcare Stories"),
+    ...STORIES.filter((s) => !(s.change || s.category === "Healthcare Stories")),
+  ].slice(0, 3);
   return (
     <>
       <Seo
@@ -40,9 +44,11 @@ export function ImpactGlance() {
       </Section>
       <Section tone="white">
         <SectionHeading eyebrow="Impact stories" title="The people behind the numbers" action={{ label: "All stories", to: "/stories/" }} />
-        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
-          {stories.map((s) => (
-            <StoryCard key={s.slug} story={s} />
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          {stories.map((s, i) => (
+            <div key={s.slug} className={i === 2 ? "sm:max-lg:hidden" : ""}>
+              <StoryCard story={s} />
+            </div>
           ))}
         </div>
       </Section>
@@ -99,14 +105,15 @@ export function ImpactDashboard() {
       />
       <Section tone="cream">
         <SectionHeading eyebrow="Year-wise data" title={current ? `Outcomes in ${current.year}` : `Outcomes ${first.year}–${last.year}`} />
-        <div role="tablist" aria-label="Year" className="mb-8 inline-flex max-w-full overflow-x-auto rounded-lg bg-white p-1 ring-1 ring-ink-200">
+        {/* Phones: tabs share the full width equally (scrolls if there are many years). Larger screens: compact pill. */}
+        <div role="tablist" aria-label="Year" className="mb-8 flex w-full gap-1 overflow-x-auto rounded-lg bg-white p-1 ring-1 ring-ink-200 sm:inline-flex sm:w-auto sm:max-w-full">
           {tabs.map((t) => (
             <button
               key={t}
               role="tab"
               aria-selected={year === t}
               onClick={() => setYear(t)}
-              className={`min-h-[40px] shrink-0 rounded-md px-3 text-sm font-semibold transition sm:min-h-[44px] sm:px-5 sm:text-base ${year === t ? "bg-maroon-700 text-white" : "text-maroon-700 hover:bg-maroon-50"}`}
+              className={`min-h-[40px] flex-1 shrink-0 whitespace-nowrap rounded-md px-3 text-sm font-semibold transition sm:min-h-[44px] sm:flex-none sm:px-5 sm:text-base ${year === t ? "bg-maroon-700 text-white" : "text-maroon-700 hover:bg-maroon-50"}`}
             >
               {t === "all" ? "All" : t}
             </button>

@@ -16,10 +16,7 @@ export const SITE = {
   emails: ["info@saisujalasravanthi.in", "saisujalasravanthi@gmail.com"],
   whatsapp: null as string | null, // TODO: confirm if an official WhatsApp exists (§14 Q4)
   registrationNote: "Sri Sathya Sai Sujala Sravanthi Trust, Hyderabad · Est. 2012 · FCRA Reg. No. 368140112",
-  social: [
-    { label: "Facebook", href: "https://www.facebook.com/saisujalasravanthi" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/company/saisujalasravanthitrust/" },
-  ],
+  // Social links ("Follow us") are in data/social.ts, managed in the CMS → Social media.
 };
 
 /** Donation details from saisujalasravanthi.in/donation. */

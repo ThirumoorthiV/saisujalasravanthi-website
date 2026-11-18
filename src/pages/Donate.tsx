@@ -3,7 +3,7 @@ import { Check, Copy, ExternalLink, FileCheck2, Globe2, HandHeart, IndianRupee, 
 import { DONATION } from "@/data/site";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
-import { ImageFrame, MediaCard } from "@/components/ui/Cards";
+import { MediaCard } from "@/components/ui/Cards";
 import { Section, SectionHeading } from "@/components/ui/Primitives";
 import { breadcrumbSchema, Seo } from "@/lib/seo";
 
@@ -108,8 +108,14 @@ export default function Donate() {
                 </figcaption>
               </figure>
             </div>
-            <div className="mt-auto pt-6">
-              <ImageFrame src="/images/site/aushadhalayam-family.webp" alt="A family supported by the Trust's free healthcare" aspect="aspect-[16/9]" className="rounded-xl" />
+            {/* Desktop: the photo grows to fill the card, so it lines up with the taller bank-details card beside it (no empty gap). */}
+            <div className="mt-6 aspect-[16/9] overflow-hidden rounded-xl bg-maroon-100 lg:aspect-auto lg:min-h-[220px] lg:flex-1">
+              <img
+                src="/images/site/aushadhalayam-family.webp"
+                alt="A family supported by the Trust's free healthcare"
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
             </div>
           </div>
 
@@ -159,7 +165,7 @@ export default function Donate() {
 
       <Section tone="tint">
         <SectionHeading eyebrow="Other ways to give" title="More ways to make a difference" align="center" />
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
           {[
             { title: "CSR Partnership", text: "Fund a Sai Swasthya centre, heart surgeries or village sanitation — with 100% transparency in fund utilisation.", to: "/csr-partnerships/", cta: "Explore CSR projects", image: "/images/free/csr-handshake.webp" },
             { title: "Donate Medicines", text: "Pharma companies can give medicines or supply at manufacturing cost through Aushadhalayam.", to: "/programmes/healthcare/aushadhalayam/", cta: "About Aushadhalayam", image: "/images/site/aushadhalayam-pharmacy.webp" },

@@ -143,16 +143,22 @@ export function GrowthBars({ rows }: { rows: { label: string; from: number; to: 
 
 /** Every figure by year — the table view behind the charts. */
 export function ImpactTable({ data, selected }: { data: YearlyImpact[]; selected: number | "all" }) {
+  // Phones: the "Measure" column stays pinned while the years scroll sideways.
+  const pinned = "sticky left-0 z-10 bg-white shadow-[6px_0_6px_-6px_rgba(0,0,0,0.15)] sm:static sm:shadow-none";
   return (
+    <>
+    <p className="mb-2 text-right text-xs text-ink-600 sm:hidden" aria-hidden>
+      Swipe the table to see all years →
+    </p>
     <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-ink-200/70">
-      <table className="w-full min-w-[520px] text-left text-sm">
+      <table className="w-full min-w-[480px] text-left text-sm">
         <thead>
           <tr className="border-b border-ink-200">
-            <th scope="col" className="p-3 font-semibold text-ink-900">
+            <th scope="col" className={`p-2.5 font-semibold text-ink-900 sm:p-3 ${pinned}`}>
               Measure
             </th>
             {data.map((y) => (
-              <th key={y.year} scope="col" className={`p-3 text-right font-semibold ${y.year === selected ? "bg-maroon-50 text-maroon-700" : "text-ink-900"}`}>
+              <th key={y.year} scope="col" className={`p-2.5 text-right font-semibold sm:p-3 ${y.year === selected ? "bg-maroon-50 text-maroon-700" : "text-ink-900"}`}>
                 {y.year}
                 {y.partial && <span className="block text-xs font-normal text-ink-600">year to date</span>}
               </th>
@@ -162,11 +168,11 @@ export function ImpactTable({ data, selected }: { data: YearlyImpact[]; selected
         <tbody>
           {data[0].metrics.map((m, i) => (
             <tr key={m.label} className="border-b border-ink-200/60 last:border-0">
-              <th scope="row" className="p-3 font-medium text-ink-900">
+              <th scope="row" className={`max-w-[130px] p-2.5 font-medium text-ink-900 sm:max-w-none sm:p-3 ${pinned}`}>
                 {m.label}
               </th>
               {data.map((y) => (
-                <td key={y.year} className={`p-3 text-right tabular-nums ${y.year === selected ? "bg-maroon-50 font-semibold" : "text-ink-600"}`}>
+                <td key={y.year} className={`p-2.5 text-right tabular-nums sm:p-3 ${y.year === selected ? "bg-maroon-50 font-semibold" : "text-ink-600"}`}>
                   {formatNumber(y.metrics[i].value)}
                 </td>
               ))}
@@ -175,5 +181,6 @@ export function ImpactTable({ data, selected }: { data: YearlyImpact[]; selected
         </tbody>
       </table>
     </div>
+    </>
   );
 }

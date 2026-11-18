@@ -75,7 +75,8 @@ function FormPage<T extends FieldValues>({
       <Section tone="cream">
         <div className="grid items-start gap-8 md:gap-10 lg:grid-cols-[1fr_1.5fr]">
           <div className="space-y-6">
-            <ImageFrame src={image} alt={imageAlt} className="rounded-xl" />
+            {/* Desktop only: on phones/tablets it would push the form below the fold (the page header already has a photo). */}
+            <ImageFrame src={image} alt={imageAlt} className="hidden rounded-xl lg:block" />
             <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70">
               <h2 className="font-heading text-xl font-semibold text-maroon-700">What to expect</h2>
               <ul className="mt-4 space-y-3">

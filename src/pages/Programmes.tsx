@@ -7,7 +7,7 @@ import { STORIES } from "@/data/stories";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
 import { EventCard, ImageFrame, ProgrammeCard, StoryCard } from "@/components/ui/Cards";
-import { QuoteBlock, Section, SectionHeading } from "@/components/ui/Primitives";
+import { CardGrid, QuoteBlock, Section, SectionHeading } from "@/components/ui/Primitives";
 import { CsrBand, MedicalVolunteerBanner } from "@/components/sections/Shared";
 import { Icon } from "@/lib/icons";
 import { breadcrumbSchema, Seo } from "@/lib/seo";
@@ -34,8 +34,8 @@ export function ProgrammesOverview() {
         const list = programmesIn(cat.slug);
         return (
           <Section key={cat.slug} tone={i % 2 ? "tint" : "cream"}>
-            <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-              <div className="flex gap-4">
+            <div className="mb-8 flex flex-col justify-between gap-3 lg:flex-row lg:items-end lg:gap-4">
+              <div className="flex min-w-0 gap-4">
                 <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-maroon-700 text-gold-500">
                   <Icon name={cat.icon} size={28} />
                 </span>
@@ -44,15 +44,18 @@ export function ProgrammesOverview() {
                   <p className="mt-1 max-w-2xl text-ink-600">{cat.summary}</p>
                 </div>
               </div>
-              <Link to={`/programmes/${cat.slug}/`} className="inline-flex shrink-0 items-center gap-1 font-semibold text-maroon-700 hover:text-maroon-600">
+              <Link
+                to={`/programmes/${cat.slug}/`}
+                className="inline-flex min-h-[44px] shrink-0 items-center gap-1 self-start font-semibold text-maroon-700 hover:text-maroon-600 lg:min-h-0 lg:self-auto"
+              >
                 Explore {cat.name} <ArrowRight size={16} aria-hidden />
               </Link>
             </div>
-            <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <CardGrid>
               {list.map((p) => (
                 <ProgrammeCard key={p.slug} programme={p} />
               ))}
-            </div>
+            </CardGrid>
           </Section>
         );
       })}
@@ -92,11 +95,11 @@ export function ProgrammeCategoryPage() {
 
       <Section tone="cream">
         <SectionHeading eyebrow={cat.name} title={`${cat.name} programmes`} />
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <CardGrid>
           {list.map((p) => (
             <ProgrammeCard key={p.slug} programme={p} />
           ))}
-        </div>
+        </CardGrid>
         {cat.slug === "healthcare" && (
           <div className="mt-12">
             <MedicalVolunteerBanner />
@@ -107,22 +110,22 @@ export function ProgrammeCategoryPage() {
       {events.length > 0 && (
         <Section tone="white">
           <SectionHeading eyebrow="Latest updates" title={`${cat.name} events`} />
-          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <CardGrid>
             {events.map((e) => (
               <EventCard key={e.slug} event={e} />
             ))}
-          </div>
+          </CardGrid>
         </Section>
       )}
 
       {stories.length > 0 && (
         <Section tone="tint">
           <SectionHeading eyebrow="Stories" title={`${cat.name} stories`} />
-          <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+          <CardGrid>
             {stories.map((s) => (
               <StoryCard key={s.slug} story={s} />
             ))}
-          </div>
+          </CardGrid>
         </Section>
       )}
       <CsrBand />
@@ -210,9 +213,10 @@ export function ProgrammeDetail() {
       {/* 6. Impact */}
       <Section tone="maroon">
         <SectionHeading eyebrow="Impact" title="What this programme has achieved" light />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Cards keep a sensible width however many figures there are (one figure doesn't stretch across the band). */}
+        <div className="flex flex-wrap gap-4">
           {programme.impact.map((m) => (
-            <div key={m.label} className="rounded-lg bg-maroon-700 p-6">
+            <div key={m.label} className="min-w-[200px] flex-1 basis-[200px] rounded-lg bg-maroon-700 p-6 sm:max-w-[320px]">
               <p className="font-heading text-3xl font-bold text-gold-500">{m.value}</p>
               <p className="mt-1 text-maroon-100">{m.label}</p>
             </div>
@@ -227,11 +231,11 @@ export function ProgrammeDetail() {
       {events.length > 0 && (
         <Section tone="cream">
           <SectionHeading eyebrow="Latest updates" title="Recent and upcoming events" />
-          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <CardGrid>
             {events.map((e) => (
               <EventCard key={e.slug} event={e} />
             ))}
-          </div>
+          </CardGrid>
         </Section>
       )}
 
@@ -253,7 +257,7 @@ export function ProgrammeDetail() {
       {/* 9. Beneficiary stories */}
       {beneficiary?.change && (
         <Section tone="tint">
-          <div className="grid items-center gap-8 md:grid-cols-2">
+          <div className="grid items-center gap-8 lg:grid-cols-2">
             <div>
               <SectionHeading eyebrow="Stories of change" title={beneficiary.title} intro={beneficiary.excerpt} />
               <ButtonLink to={`/stories/${beneficiary.slug}/`} variant="secondary" className="-mt-4">

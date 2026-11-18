@@ -6,15 +6,18 @@ import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   BookOpen,
+  Building2,
   CalendarDays,
   Globe,
   HeartHandshake,
+  History,
   Images,
   Inbox,
   LayoutDashboard,
   LogOut,
   MapPin,
   Menu,
+  Share2,
   UserRound,
   Users,
   X,
@@ -23,7 +26,8 @@ import {
 import { HashRouter, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { SITE } from "@/data/site";
 import { saveCmsSession } from "@/lib/cmsSession";
-import { getStaff, type StaffMember } from "./api";
+import { getStaff, setActor, type StaffMember } from "./api";
+import { ActivityPage } from "./Activity";
 import { ConfirmProvider } from "./confirm";
 import { ContentEditor, ContentList } from "./Content";
 import { Dashboard } from "./Dashboard";
@@ -64,19 +68,21 @@ export function AdminApp() {
     [],
   );
 
-  // Tell the public website header who is signed in (it shows their avatar).
+  // Tell the public website header who is signed in (it shows their avatar),
+  // and credit CMS changes to them (activity log, "Last updated by").
   useEffect(() => {
+    setActor(staff ?? null);
     if (user === null || staff === null) saveCmsSession(null);
     else if (staff) saveCmsSession({ name: staff.name, photo: staff.photo, area: AREAS[staff.role] });
   }, [user, staff]);
 
-  if (user === undefined || (user && staff === undefined)) return <Spinner />;
+  if (user === undefined || (user && staff === undefined)) return <Spinner fullScreen label="Loading the CMS…" />;
 
   // Each role has its own address: /login/ to sign in, then /admin/ or /staff/.
   const home = staff ? AREAS[staff.role] : LOGIN;
   if (!window.location.pathname.startsWith(home)) {
     window.location.replace(home + (staff ? window.location.hash : ""));
-    return <Spinner />;
+    return <Spinner fullScreen label="Opening your CMS…" />;
   }
   if (!user) return <Login />;
   if (!staff) return <NotAuthorised user={user} error={error} />;
@@ -94,6 +100,7 @@ export function AdminApp() {
             <Route path="/:collection/edit/:id" element={<ContentEditor />} />
             <Route path="/submissions" element={staff.role === "admin" ? <SubmissionsPage /> : <Navigate to="/" />} />
             <Route path="/staff" element={staff.role === "admin" ? <StaffPage /> : <Navigate to="/" />} />
+            <Route path="/activity" element={staff.role === "admin" ? <ActivityPage /> : <Navigate to="/" />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
@@ -141,6 +148,8 @@ function Shell({ children }: { children: React.ReactNode }) {
         ["/programmes", "Programmes", HeartHandshake],
         ["/leadership", "Leadership", UserRound],
         ["/centres", "Our Network", MapPin],
+        ["/partners", "Our Partners", Building2],
+        ["/social", "Social media", Share2],
       ],
     },
     ...(staff.role === "admin"
@@ -148,6 +157,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           {
             title: "Admin",
             links: [
+              ["/activity", "Recent activity", History],
               ["/submissions", "Form submissions", Inbox],
               ["/staff", "Staff access", Users],
             ] as Link[],

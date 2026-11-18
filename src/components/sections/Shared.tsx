@@ -28,7 +28,8 @@ export function CsrBand() {
   return (
     <section className="relative overflow-hidden bg-maroon-700 text-white">
       <div className="absolute -left-20 top-0 h-full w-1/2 skew-x-12 bg-maroon-600/40" aria-hidden />
-      <div className="relative mx-auto flex max-w-content flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between">
+      {/* Text and buttons side by side only on wide screens; below that the buttons sit under the text. */}
+      <div className="relative mx-auto flex max-w-content flex-col items-start gap-6 px-4 py-16 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-widest text-gold-500">CSR Partnerships</p>
           <h2 className="mt-2 font-heading text-[26px] font-semibold leading-tight md:text-4xl">
@@ -38,11 +39,12 @@ export function CsrBand() {
             Established rural network, healthcare expertise and transparent reporting for every rupee invested.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <ButtonLink to="/csr-partnerships/" variant="light">
+        {/* Phones: two full-width buttons of equal size. Larger: side by side, never wrapping. */}
+        <div className="grid w-full gap-3 sm:flex sm:w-auto sm:shrink-0">
+          <ButtonLink to="/csr-partnerships/" variant="light" className="whitespace-nowrap">
             <Briefcase size={18} aria-hidden /> Partner With Us
           </ButtonLink>
-          <ButtonLink to="/csr-partnerships/csr-enquiry/" variant="outline-light">
+          <ButtonLink to="/csr-partnerships/csr-enquiry/" variant="outline-light" className="whitespace-nowrap">
             Request a CSR Discussion
           </ButtonLink>
         </div>

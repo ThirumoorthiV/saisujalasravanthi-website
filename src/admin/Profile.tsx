@@ -9,7 +9,7 @@ import { auth } from "./Login";
 import { Avatar, Button, Card, errorMessage, inputClass, Notice, PageTitle } from "./ui";
 
 const CAN_DO: Record<"admin" | "editor", string[]> = {
-  editor: ["Add, edit, publish and delete Blog posts, Events and Gallery photos", "Edit Programmes, Leadership and Our Network"],
+  editor: ["Add, edit, publish and delete Blog posts, Events and Gallery photos", "Edit Programmes, Leadership, Our Network, Our Partners and the “Follow us” social media links"],
   admin: [
     "Everything an Editor can do",
     "View, download and delete form submissions",

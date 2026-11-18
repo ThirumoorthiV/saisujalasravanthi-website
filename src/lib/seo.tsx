@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import { SITE } from "@/data/site";
+import { SOCIAL } from "@/data/social";
 
 interface SeoProps {
   title: string;
@@ -58,6 +59,8 @@ export const organisationSchema = {
   url: SITE.url,
   foundingDate: String(SITE.founded),
   address: { "@type": "PostalAddress", addressLocality: "Hyderabad", addressRegion: "Telangana", addressCountry: "IN" },
+  // The Trust's social profiles (CMS → Social media), so Google can link them to the Trust.
+  sameAs: SOCIAL.map((s) => s.href),
 };
 
 export const breadcrumbSchema = (items: { name: string; path: string }[]) => ({

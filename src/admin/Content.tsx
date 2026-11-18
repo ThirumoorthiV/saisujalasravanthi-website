@@ -5,11 +5,16 @@ import { Dropdown } from "@/components/ui/Dropdown";
 import { deleteItem, getItem, getSiteMeta, isImported, listItems, photoPreviewUrl, saveItem, uploadPhoto, type Item } from "./api";
 import { COLLECTIONS, fromForm, slugify, sortItems, toForm, type CollectionDef, type CollectionName, type Field, type FormValues } from "./collections";
 import { useConfirm } from "./confirm";
-import { Button, buttonClass, Card, errorMessage, inputClass, Notice, PageTitle, Spinner, StatusBadge } from "./ui";
+import { Button, buttonClass, Card, errorMessage, inputClass, Notice, PageTitle, Spinner, StatusBadge, timeAgo } from "./ui";
+import { useStaff } from "./AdminApp";
+import { Timestamp } from "firebase/firestore";
 
+/** The collection in the URL, or null if it doesn't exist or this person may not edit it (admin-only sections). */
 function useCollection(): CollectionDef | null {
   const { collection } = useParams();
-  return collection && collection in COLLECTIONS ? COLLECTIONS[collection as CollectionName] : null;
+  const staff = useStaff();
+  const def = collection && collection in COLLECTIONS ? COLLECTIONS[collection as CollectionName] : null;
+  return def && (!def.adminOnly || staff.role === "admin") ? def : null;
 }
 
 const str = (v: unknown) => (typeof v === "string" ? v : "");
@@ -121,6 +126,7 @@ export function ContentList() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold text-ink-900">{str(item[def.titleField]) || "(untitled)"}</span>
                   <span className="block truncate text-sm text-ink-600">{def.subtitle(item)}</span>
+                  <UpdatedBy item={item} className="mt-0.5 block truncate text-[13px]" />
                 </span>
                 <StatusBadge published={item.published} />
               </Link>
@@ -148,6 +154,24 @@ function usePreview(path: string) {
   return url;
 }
 
+/** "Updated by Priya · 2 hours ago" (only for changes made since the activity log was added). */
+function UpdatedBy({ item, className }: { item: Item; className: string }) {
+  const when = item.updatedAt?.toDate();
+  if (!item.updatedBy?.name && !when) return null;
+  return (
+    <span className={`text-ink-600 ${className}`} title={when?.toLocaleString("en-IN")}>
+      {item.updatedBy?.name ? (
+        <>
+          Updated by <strong className="font-semibold text-ink-900">{item.updatedBy.name}</strong>
+        </>
+      ) : (
+        "Updated"
+      )}
+      {when && ` · ${timeAgo(when)}`}
+    </span>
+  );
+}
+
 function Thumb({ path }: { path: string }) {
   const url = usePreview(path);
   return url ? (
@@ -164,6 +188,7 @@ export function ContentEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const staff = useStaff();
   const [original, setOriginal] = useState<Item | null>();
   const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -221,9 +246,9 @@ export function ContentEditor() {
     setBusy(true);
     setMessage(null);
     try {
-      const { id: savedId, autoUpdate } = await saveItem(def, id ?? null, item, publish);
+      const { id: savedId, autoUpdate } = await saveItem(def, id ?? null, item, publish, original ?? null);
       setDirty(false);
-      setOriginal({ ...item, id: savedId, published: publish });
+      setOriginal({ ...item, id: savedId, published: publish, updatedAt: Timestamp.now(), updatedBy: { uid: staff.uid, name: staff.name } });
       setMessage({
         tone: "success",
         text: publish
@@ -274,7 +299,7 @@ export function ContentEditor() {
     if (!ok) return;
     setBusy(true);
     try {
-      await deleteItem(def.name, id);
+      await deleteItem(def, id, original ?? null);
       navigate(`/${def.name}`);
     } catch (err) {
       setMessage({ tone: "error", text: errorMessage(err) });
@@ -295,6 +320,7 @@ export function ContentEditor() {
       <PageTitle actions={original && <StatusBadge published={published} />}>
         {id ? `Edit ${def.singular}` : `New ${def.singular}`}
       </PageTitle>
+      {original && <UpdatedBy item={original} className="-mt-4 mb-4 text-sm" />}
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
       {published && original && (
         <p className="-mt-2 mb-4 text-sm">
@@ -370,10 +396,26 @@ function FieldInput({ field, value, error, locked, onChange }: FieldProps) {
 
   if (field.type === "checkbox") {
     return (
-      <label className="flex items-start gap-2 text-[15px]">
-        <input type="checkbox" id={id} checked={Boolean(value)} onChange={(e) => onChange(e.target.checked)} className="mt-1 h-4 w-4 accent-maroon-700" />
-        {field.label}
-      </label>
+      <div>
+        <label className="flex items-start gap-2 text-[15px]">
+          <input
+            type="checkbox"
+            id={id}
+            checked={Boolean(value)}
+            onChange={(e) => onChange(e.target.checked)}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? `${id}-error` : undefined}
+            className="mt-1 h-4 w-4 accent-maroon-700"
+          />
+          {field.label}
+        </label>
+        {field.help && !error && <p className="ml-6 mt-1 text-[13px] text-ink-600">{field.help}</p>}
+        {error && (
+          <p id={`${id}-error`} className="ml-6 mt-1 text-[13px] font-semibold text-error">
+            {error}
+          </p>
+        )}
+      </div>
     );
   }
 

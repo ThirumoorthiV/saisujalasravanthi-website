@@ -139,7 +139,8 @@ export const CSR_PROJECTS: CsrProject[] = [
 // already published on the existing website; confirm permission before launch.
 const partner = (name: string, file: string): Partner => ({ name, logo: `/images/partners/${file}.png`, permissionGranted: true });
 
-export const PARTNERS: Partner[] = [
+/** Built-in partner list, used until admins import it into the CMS (CSR → Our Partners). */
+export const SEED_PARTNERS: Partner[] = [
   partner("NATCO Pharma", "natco"),
   partner("Pulse Pharmaceuticals", "pulse-pharmaceuticals"),
   partner("Serin", "serin"),
@@ -162,6 +163,10 @@ export const PARTNERS: Partner[] = [
   partner("Med Manor Organics", "med-manor-organics"),
   partner("Vital Therapeutics", "vital-therapeutics"),
 ];
+
+export const PARTNERS: Partner[] = [...(CMS.partners ?? SEED_PARTNERS.map((p, i) => ({ ...p, order: i + 1 })))].sort(
+  (a, b) => (a.order ?? 0) - (b.order ?? 0),
+);
 
 const UGD = "https://www.saisujalasravanthi.in/_files/ugd";
 

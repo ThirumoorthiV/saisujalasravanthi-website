@@ -2,10 +2,11 @@
 // Field keys match the types in src/types, so published items drop straight
 // into the website (see scripts/fetch-content.mjs). Nested keys use dots.
 import { EVENT_CATEGORIES, SEED_EVENTS } from "@/data/events";
-import { SEED_CENTRES, SEED_GALLERY, SEED_LEADERSHIP } from "@/data/organisation";
+import { SEED_CENTRES, SEED_GALLERY, SEED_LEADERSHIP, SEED_PARTNERS } from "@/data/organisation";
 import { getCategory, PROGRAMME_CATEGORIES, SEED_PROGRAMMES } from "@/data/programmes";
 import { SEED_STORIES, STORY_CATEGORIES } from "@/data/stories";
-import type { Centre, GalleryItem, IconName, Leader } from "@/types";
+import { PLATFORM_DOMAINS, SEED_SOCIAL, SOCIAL_PLATFORMS } from "@/data/social";
+import type { Centre, GalleryItem, IconName, Leader, SocialPlatform } from "@/types";
 
 export type FieldType =
   | "text"
@@ -36,12 +37,14 @@ export interface Field {
   section?: string;
 }
 
-export type CollectionName = "stories" | "events" | "gallery" | "programmes" | "leadership" | "centres";
+export type CollectionName = "stories" | "events" | "gallery" | "programmes" | "leadership" | "centres" | "partners" | "social";
 
 export interface CollectionDef {
   name: CollectionName;
   label: string;
   singular: string;
+  /** Only admins can see and change it (also enforced in firestore.rules). */
+  adminOnly?: boolean;
   /** Sidebar group: regular updates, or the fixed website pages. */
   group: "updates" | "pages";
   /** Short explanation shown on the list page. */
@@ -333,6 +336,113 @@ export const COLLECTIONS: Record<CollectionName, CollectionDef> = {
       orderField,
     ],
   },
+
+  partners: {
+    name: "partners",
+    label: "Our Partners",
+    singular: "partner",
+    group: "pages",
+    intro:
+      "CSR Partnerships → Our Partners: the organisations that support the Trust, shown with their logo. Only add a partner once their written permission to show the logo has been received. Admins and editors can change these.",
+    titleField: "name",
+    imageField: "logo",
+    sortField: "order",
+    sortDir: "asc",
+    subtitle: (p) => `Position ${p.order ?? "-"}${p.website ? ` · ${String(p.website).replace(/^https:\/\/(www\.)?/, "").replace(/\/$/, "")}` : ""}`,
+    url: () => "/csr-partnerships/our-partners/",
+    seed: () =>
+      SEED_PARTNERS.map((p, i) => [
+        `partner-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
+        { ...p, order: i + 1 },
+      ]),
+    fields: [
+      { key: "name", label: "Partner name", type: "text", required: true, help: "e.g. NATCO Pharma. Also used as the logo's description for blind visitors and Google." },
+      {
+        key: "logo",
+        label: "Logo",
+        type: "image",
+        required: true,
+        help: "A clear logo, ideally on a white or transparent background. It's shown on a white card.",
+      },
+      { key: "website", label: "Website (optional)", type: "text", help: "e.g. https://www.natcopharma.co.in. If added, the logo links to it." },
+      {
+        key: "permissionGranted",
+        label: "Written permission to show this logo has been received",
+        type: "checkbox",
+        help: "Required before publishing.",
+      },
+      { ...orderField, help: "Order on the page: 1 is shown first." },
+    ],
+    finalise: (p) => {
+      const out = { ...p };
+      if (!out.website) delete out.website;
+      return out;
+    },
+    validate: (p) => {
+      const errors: Record<string, string> = {};
+      if (p.website) {
+        try {
+          if (new URL(String(p.website)).protocol !== "https:") throw new Error();
+        } catch {
+          errors.website = "Paste the full link starting with https://";
+        }
+      }
+      if (!p.permissionGranted) errors.permissionGranted = "Tick this once the partner's written permission has been received. Until then, save it as a draft.";
+      return errors;
+    },
+  },
+
+  social: {
+    name: "social",
+    label: "Social media",
+    singular: "social link",
+    group: "pages",
+    intro:
+      "The “Follow us” icons in the website footer and on Contact Us (Google also uses them to connect the Trust's profiles). Admins and editors can change these.",
+    titleField: "platform",
+    sortField: "order",
+    sortDir: "asc",
+    subtitle: (s) => `${s.platform === "Other" ? `${s.label || "Other"} · ` : ""}${String(s.href ?? "").replace(/^https:\/\/(www\.)?/, "")}`,
+    filter: { field: "platform", label: "Platform", options: opts(SOCIAL_PLATFORMS) },
+    url: () => "/contact-us/",
+    seed: () => SEED_SOCIAL.map((s) => [`social-${s.platform.toLowerCase().replace(/[^a-z]+/g, "-")}`, { ...s }]),
+    fields: [
+      { key: "platform", label: "Platform", type: "select", options: SOCIAL_PLATFORMS, required: true },
+      {
+        key: "href",
+        label: "Link",
+        type: "text",
+        required: true,
+        help: "The full address of the Trust's page, starting with https://, e.g. https://www.instagram.com/saisujalasravanthi",
+      },
+      { key: "label", label: "Name (only for “Other”)", type: "text", help: "e.g. Our Blog. Shown when someone points at the icon." },
+      { ...orderField, help: "Order of the icons: 1 is shown first." },
+    ],
+    finalise: (s) => {
+      const out = { ...s };
+      if (out.platform !== "Other") delete out.label;
+      return out;
+    },
+    validate: (s) => {
+      const errors: Record<string, string> = {};
+      const href = String(s.href ?? "");
+      let host = "";
+      try {
+        const u = new URL(href);
+        if (u.protocol !== "https:") throw new Error();
+        host = u.hostname.toLowerCase().replace(/^www\./, "");
+      } catch {
+        errors.href = "Paste the full link starting with https://";
+      }
+      const domains = PLATFORM_DOMAINS[s.platform as SocialPlatform];
+      if (host && domains && !domains.some((d) => host === d || host.endsWith(`.${d}`))) {
+        const article = /^[AEIOU]/.test(String(s.platform)) ? "an" : "a";
+        errors.href = `This doesn't look like ${article} ${s.platform} link (expected ${domains[0]}). Check the platform or the link.`;
+      }
+      if (s.platform === "Other" && !String(s.label ?? "").trim()) errors.label = "Give this link a name, e.g. Our Blog.";
+      return errors;
+    },
+  },
 };
 
 export const COLLECTION_LIST = Object.values(COLLECTIONS);
@@ -425,6 +535,35 @@ export function fromForm(
   const final = def.finalise ? def.finalise(item) : item;
   if (publishing && def.validate) Object.assign(errors, { ...def.validate(final), ...errors });
   return { item: final, errors };
+}
+
+export interface FieldChange {
+  field: string;
+  before: string;
+  after: string;
+}
+
+const MAX_CHANGE_TEXT = 600;
+const clip = (s: string) => (s.length > MAX_CHANGE_TEXT ? `${s.slice(0, MAX_CHANGE_TEXT)}…` : s);
+
+/** Field-by-field differences between two versions of an item, labelled as in the editor. */
+export function diffItems(def: CollectionDef, before: Record<string, unknown> | null, after: Record<string, unknown> | null): FieldChange[] {
+  const a = before ? toForm(def, before) : {};
+  const b = after ? toForm(def, after) : {};
+  const changes: FieldChange[] = [];
+  for (const f of def.fields) {
+    const x = a[f.key] ?? (f.type === "checkbox" ? false : "");
+    const y = b[f.key] ?? (f.type === "checkbox" ? false : "");
+    if (String(x).trim() === String(y).trim()) continue;
+    const show = (v: string | boolean) =>
+      f.type === "checkbox" ? (v ? "Yes" : "No") : f.type === "image" ? (v ? "Photo" : "") : clip(String(v).trim());
+    changes.push({
+      field: f.label,
+      before: f.type === "image" && x && y ? "Previous photo" : show(x),
+      after: f.type === "image" && x && y ? "New photo" : show(y),
+    });
+  }
+  return changes;
 }
 
 export const slugify = (text: string) =>

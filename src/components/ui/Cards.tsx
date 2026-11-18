@@ -63,7 +63,7 @@ export function MediaCard({ image, imageAlt = "", title, text, meta, children, c
       <div className="flex flex-1 flex-col p-5 md:p-6">
         {meta && <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-ink-600">{meta}</div>}
         <Heading className="font-heading text-lg font-semibold leading-snug text-maroon-700 md:text-xl">{title}</Heading>
-        {text && <p className="mt-2 line-clamp-3 text-ink-600">{text}</p>}
+        {text && <p className="mt-2 line-clamp-4 text-ink-600">{text}</p>}
         {children}
         {cta && (
           <span className="mt-auto inline-flex items-center gap-1 pt-5 font-semibold text-maroon-700">
@@ -131,13 +131,14 @@ export function EventCard({ event }: { event: TrustEvent }) {
       imageAlt={event.title}
       meta={
         <>
-          <span className="inline-flex items-center gap-1 rounded bg-maroon-700 px-2 py-1 text-xs font-semibold text-white">
-            <Calendar size={12} aria-hidden /> {badge.day} {badge.month} {badge.year}
+          {/* Status is part of the date badge (only "Upcoming" is shown), so every card's badge row has the same 2 items and lines up. */}
+          <span
+            className={`inline-flex items-center gap-1 whitespace-nowrap rounded px-2 py-1 text-xs font-semibold text-white ${upcoming ? "bg-success" : "bg-maroon-700"}`}
+          >
+            <Calendar size={12} aria-hidden /> {upcoming && "Upcoming · "}
+            {badge.day} {badge.month} {badge.year}
           </span>
           <Tag>{event.category}</Tag>
-          <span className={`rounded px-2 py-1 text-xs font-semibold ${upcoming ? "bg-success/10 text-success" : "bg-ink-200/60 text-ink-600"}`}>
-            {event.status}
-          </span>
         </>
       }
       title={event.title}

@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { initializeApp } from "firebase/app";
-import { collection, doc, getDoc, getDocs, getFirestore, query, where } from "firebase/firestore/lite";
+import { collection, doc, getDoc, getDocs, getFirestore, query, setLogLevel, where } from "firebase/firestore/lite";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outFile = path.join(root, "src/data/cms.generated.json");
@@ -30,6 +30,8 @@ const COLLECTIONS = {
   programmes: { sort: "order", dir: 1 },
   leadership: { sort: "order", dir: 1 },
   centres: { sort: "order", dir: 1 },
+  social: { sort: "order", dir: 1 },
+  partners: { sort: "order", dir: 1 },
 };
 // Imported by the first CMS import, before per-section imports existed.
 const FIRST_IMPORT = ["stories", "events", "gallery"];
@@ -103,7 +105,8 @@ async function main() {
     const snap = await getDocs(query(collection(db, name), where("published", "==", true)));
     content[name] = snap.docs
       .map((d) => {
-        const { published, updatedAt, ...item } = d.data();
+        // CMS-only fields (who/when) never go into the public website.
+        const { published, updatedAt, updatedBy, ...item } = d.data();
         return keepId ? { ...item, id: d.id } : item;
       })
       .sort(compare(sort, dir));
@@ -132,7 +135,11 @@ async function main() {
 
 async function watch() {
   if (!db) return;
+  // A brief network hiccup makes one check fail; that's normal. Hide Firebase's own
+  // long error output and only say something if the connection stays down.
+  setLogLevel("silent");
   let last = await cmsVersion().catch(() => "");
+  let failures = 0;
   console.log(`CMS: watching for changes made in the CMS (every ${WATCH_SECONDS}s)`);
   setInterval(async () => {
     try {
@@ -142,11 +149,16 @@ async function watch() {
     }
     try {
       const now = await cmsVersion();
+      if (failures >= 3) console.log("CMS: connection is back, watching for changes again.");
+      failures = 0;
       if (now === last) return;
       last = now;
       await main();
     } catch (err) {
-      console.warn(`CMS: could not check for changes (${err.message})`);
+      failures++;
+      if (failures === 3) {
+        console.warn(`CMS: can't reach the CMS for the last ${3 * WATCH_SECONDS}s (${err.message || "network error"}). Check your internet; still retrying.`);
+      }
     }
   }, WATCH_SECONDS * 1000);
 }

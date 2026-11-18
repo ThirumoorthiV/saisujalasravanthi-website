@@ -52,8 +52,9 @@ export function Footer() {
   return (
     <footer className="bg-maroon-900 text-maroon-100">
       <div className="mx-auto max-w-content px-4 py-14 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
-          <div>
+        {/* Phones: link groups 2 per row. Tablets: 4 in a row under the contact block. Desktop: all 5 side by side. */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
+          <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <div className="inline-block rounded-lg bg-cream px-3 py-2">
               <Logo className="h-14" />
             </div>
@@ -103,8 +104,8 @@ export function Footer() {
         <div className="mt-12 border-t border-gold-500/30 pt-6 text-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <p>{SITE.registrationNote}</p>
-            <div className="flex items-center gap-4">
-              <span className="font-semibold text-white">Follow us</span>
+            <div className="flex shrink-0 flex-wrap items-center gap-4">
+              <span className="whitespace-nowrap font-semibold text-white">Follow us</span>
               <SocialLinks source="footer" tone="dark" />
             </div>
           </div>
