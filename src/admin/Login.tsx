@@ -212,7 +212,7 @@ export function NotAuthorised({ user, error }: { user: User; error: string }) {
           admin to add you on the <em>Staff access</em> page using this User ID:
         </p>
         <p className="my-3 select-all break-all rounded bg-maroon-50 px-3 py-2 font-mono text-sm">{user.uid}</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid gap-2 sm:flex sm:flex-wrap">
           <Button variant="secondary" onClick={() => navigator.clipboard?.writeText(user.uid)}>
             Copy User ID
           </Button>

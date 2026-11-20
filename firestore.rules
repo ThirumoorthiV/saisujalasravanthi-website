@@ -39,11 +39,11 @@ service cloud.firestore {
       return request.resource.data.updatedBy.uid == request.auth.uid;
     }
     match /{section}/{id} {
-      allow read: if section in ['stories', 'events', 'gallery', 'programmes', 'leadership', 'centres']
+      allow read: if section in ['stories', 'events', 'gallery', 'programmes', 'leadership', 'centres', 'reports']
         && (resource.data.published == true || isStaff());
-      allow create, update: if section in ['stories', 'events', 'gallery', 'programmes', 'leadership', 'centres']
+      allow create, update: if section in ['stories', 'events', 'gallery', 'programmes', 'leadership', 'centres', 'reports']
         && isStaff() && savedBySelf();
-      allow delete: if section in ['stories', 'events', 'gallery', 'programmes', 'leadership', 'centres']
+      allow delete: if section in ['stories', 'events', 'gallery', 'programmes', 'leadership', 'centres', 'reports']
         && isStaff();
     }
 
@@ -60,11 +60,13 @@ service cloud.firestore {
       allow delete: if isStaff();
     }
 
-    // Activity log: who changed what in the CMS. Admins can read it. Staff can only
+    // Activity log: who changed what in the CMS. Admins can read all of it, editors only
+    // their own entries. Staff can only
     // ADD entries, in their own name, stamped with the server time; nobody can
     // change or delete them, so the history can't be rewritten.
     match /activity/{id} {
-      allow read: if isAdmin();
+      // Admins see everything; everyone else only their own changes ("My recent changes").
+      allow read: if isAdmin() || (isStaff() && resource.data.uid == request.auth.uid);
       allow create: if isStaff()
         && request.resource.data.keys().hasOnly(['uid', 'name', 'role', 'action', 'section', 'itemId', 'title', 'changes', 'at'])
         && request.resource.data.uid == request.auth.uid
@@ -77,13 +79,25 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Photos uploaded in the CMS (resized in the browser, stored as bytes).
-    // Public: the website build downloads them.
+    // Photos and PDFs uploaded in the CMS. Public: the website build downloads them.
+    // A photo is one document (resized in the browser, stored as bytes). A PDF (Reports)
+    // is a document describing it plus its pieces in chunks/0, 1, … (max 1 MB each).
     match /media/{id} {
       allow read: if true;
-      allow create: if isStaff() && request.resource.data.bytes is bytes;
+      allow create: if isStaff()
+        && (request.resource.data.bytes is bytes
+          || (request.resource.data.contentType == 'application/pdf'
+            && request.resource.data.chunks is int
+            && request.resource.data.chunks <= 25));
       allow delete: if isStaff();
       allow update: if false;
+
+      match /chunks/{n} {
+        allow read: if true;
+        allow create: if isStaff() && request.resource.data.bytes is bytes && request.resource.data.index is int;
+        allow delete: if isStaff();
+        allow update: if false;
+      }
     }
 
     // meta/site.updatedAt changes on every CMS save; the deploy workflow checks it

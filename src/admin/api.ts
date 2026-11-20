@@ -20,6 +20,7 @@ import {
   type QueryDocumentSnapshot,
   updateDoc,
   Timestamp,
+  where,
   writeBatch,
 } from "firebase/firestore";
 import { app, db } from "@/lib/firebase";
@@ -152,6 +153,18 @@ async function logActivity(entry: Omit<ActivityEntry, "id" | "at" | "uid" | "nam
     // Never block the actual change because the log couldn't be written (e.g. rules not published yet).
     console.warn("Could not record this change in the activity log:", err);
   }
+}
+
+/**
+ * The signed-in person's own latest changes ("My recent changes" on an editor's Dashboard).
+ * Filtered by person only and sorted here, so Firestore needs no extra index.
+ */
+export async function listMyActivity(uid: string, count: number): Promise<ActivityEntry[]> {
+  const snap = await getDocs(query(collection(db, "activity"), where("uid", "==", uid)));
+  return snap.docs
+    .map((d) => ({ ...d.data(), id: d.id }) as ActivityEntry)
+    .sort((a, b) => (b.at?.toMillis() ?? Date.now()) - (a.at?.toMillis() ?? Date.now()))
+    .slice(0, count);
 }
 
 export async function listActivity(pageSize: number, after?: QueryDocumentSnapshot) {
@@ -336,6 +349,57 @@ export function photoPreviewUrl(path: string): Promise<string> {
     );
   }
   return previewCache.get(path)!;
+}
+
+export const MAX_PDF_MB = 20;
+
+/**
+ * Stores a PDF in the `media` collection. A Firestore document holds at most 1 MB, so the
+ * file is split into pieces (media/<id>/chunks/0, 1, …) and the build joins them again.
+ * Returns the website path the build saves it to, e.g. /files/cms/AbC123.pdf.
+ */
+export async function uploadPdf(file: File, onProgress?: (percent: number) => void): Promise<string> {
+  if (file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) throw new Error("Please choose a PDF file.");
+  if (file.size > MAX_PDF_MB * 1024 * 1024)
+    throw new Error(`This PDF is ${(file.size / 1024 / 1024).toFixed(1)} MB; the limit is ${MAX_PDF_MB} MB. Please compress it (for example with a free “compress PDF” website) and try again.`);
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  // Every PDF starts with "%PDF".
+  if (String.fromCharCode(...bytes.subarray(0, 4)) !== "%PDF") throw new Error("This file isn't a valid PDF.");
+  const ref = doc(collection(db, "media"));
+  const chunks = Math.ceil(bytes.length / MAX_BYTES);
+  for (let i = 0; i < chunks; i++) {
+    await setDoc(doc(db, "media", ref.id, "chunks", String(i)), {
+      index: i,
+      bytes: Bytes.fromUint8Array(bytes.subarray(i * MAX_BYTES, (i + 1) * MAX_BYTES)),
+    });
+    onProgress?.(Math.round(((i + 1) / chunks) * 100));
+  }
+  // Written last: the PDF only "exists" once all its pieces are saved.
+  await setDoc(ref, {
+    contentType: "application/pdf",
+    chunks,
+    size: bytes.length,
+    originalName: file.name.slice(0, 200),
+    createdAt: serverTimestamp(),
+  });
+  return `/files/cms/${ref.id}.pdf`;
+}
+
+/** Name and size of an uploaded PDF, for the editor. */
+export async function pdfInfo(path: string): Promise<{ name: string; size: number } | null> {
+  const m = path.match(/^\/files\/cms\/([\w-]+)\.pdf$/);
+  if (!m) return null;
+  const snap = await getDoc(doc(db, "media", m[1]));
+  return snap.exists() ? { name: snap.data().originalName, size: snap.data().size } : null;
+}
+
+/** Opens a PDF from the CMS (uploaded PDFs aren't on the website until the next build). */
+export async function pdfUrl(path: string): Promise<string> {
+  const m = path.match(/^\/files\/cms\/([\w-]+)\.pdf$/);
+  if (!m) return path;
+  const snap = await getDocs(collection(db, "media", m[1], "chunks"));
+  const parts = snap.docs.map((d) => d.data()).sort((a, b) => a.index - b.index).map((d) => d.bytes.toUint8Array() as Uint8Array);
+  return URL.createObjectURL(new Blob(parts, { type: "application/pdf" }));
 }
 
 // --- Staff and submissions ----------------------------------------------------

@@ -170,14 +170,18 @@ export const PARTNERS: Partner[] = [...(CMS.partners ?? SEED_PARTNERS.map((p, i)
 
 const UGD = "https://www.saisujalasravanthi.in/_files/ugd";
 
-export const REPORTS: Report[] = [
+/** Reports built into the website, until they're imported into the CMS. */
+export const SEED_REPORTS: Report[] = [
   { title: "FCRA Annual Return 2023–24", type: "Annual Report", year: "2023–24", file: `${UGD}/6ed857_18a828ef5aae42748d6851cf7b17d609.pdf` },
   { title: "FCRA Grant Document", type: "Certificate", year: "—", file: `${UGD}/6ed857_f664e996f28b42569fabf47ee5121be7.pdf` },
   { title: "Annual Report 2025–26", type: "Annual Report", year: "2025–26", file: "#" },
   { title: "Audited Financial Statements 2025–26", type: "Financial Report", year: "2025–26", file: "#" },
   { title: "Audited Financial Statements 2024–25", type: "Financial Report", year: "2024–25", file: "#" },
   { title: "CSR Impact Report", type: "CSR Report", year: "2025–26", file: "#" },
-]; // TODO: replace "#" with real PDFs
+];
+
+/** Annual, financial, CSR and FCRA documents: from the CMS (Reports) once imported. */
+export const REPORTS: Report[] = CMS.reports ?? SEED_REPORTS;
 
 // Photographs from the existing website. Dates are approximate (TODO: confirm
 // with the Trust's archive) and drive the year filter.

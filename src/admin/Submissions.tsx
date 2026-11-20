@@ -128,7 +128,42 @@ export function SubmissionsPage() {
               <p className="text-ink-600">No submissions yet.</p>
             </Card>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-ink-200 bg-white">
+            <>
+            {/* Phones: one card per submission. */}
+            <ul className="divide-y divide-ink-200 rounded-lg border border-ink-200 bg-white xl:hidden">
+              {shown.map((s) => (
+                <li key={s.id} className="flex items-start gap-3 px-4 py-3">
+                  <button type="button" onClick={() => setViewing(s)} className="min-w-0 flex-1 text-left">
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="font-semibold text-ink-900">{show(personName(s))}</span>
+                      <span className="whitespace-nowrap rounded-full bg-maroon-50 px-2 py-0.5 text-[12px] font-semibold text-maroon-700">{s.form}</span>
+                    </span>
+                    {s.data?.email ? <span className="mt-0.5 block truncate text-sm text-ink-900">{String(s.data.email)}</span> : null}
+                    {s.data?.phone ? <span className="block text-sm text-ink-900">{String(s.data.phone)}</span> : null}
+                    <span className="mt-0.5 block text-[13px] text-ink-600">{formatWhen(s)}</span>
+                  </button>
+                  <div className="flex shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setViewing(s)}
+                      className={`${iconButton} text-maroon-700 hover:bg-maroon-50 focus-visible:ring-maroon-100`}
+                      aria-label={`View submission from ${personName(s) || "unknown"}`}
+                    >
+                      <Eye size={18} aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => remove(s)}
+                      className={`${iconButton} text-error hover:bg-red-50 focus-visible:ring-red-100`}
+                      aria-label={`Delete submission from ${personName(s) || "unknown"}`}
+                    >
+                      <Trash2 size={18} aria-hidden />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="hidden overflow-x-auto rounded-lg border border-ink-200 bg-white xl:block">
               <table className="w-full min-w-[760px] text-left text-[15px]">
                 <thead className="border-b border-ink-200 bg-maroon-50 text-[13px] uppercase tracking-wide text-maroon-900">
                   <tr>
@@ -175,6 +210,7 @@ export function SubmissionsPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </>
       )}
@@ -237,13 +273,13 @@ function SubmissionDialog({ submission: s, onClose, onDelete }: { submission: Su
         </div>
       </dl>
 
-      <div className="flex flex-wrap justify-between gap-2 border-t border-ink-200 bg-cream px-6 py-4">
+      <div className="flex flex-col-reverse gap-2 border-t border-ink-200 bg-cream px-4 py-4 sm:flex-row sm:flex-wrap sm:justify-between sm:px-6">
         <Button variant="danger" onClick={onDelete}>
           <Trash2 size={16} aria-hidden /> Delete
         </Button>
-        <div className="flex gap-2">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row">
           {email && (
-            <a href={`mailto:${email}?subject=${encodeURIComponent(`Re: your ${s.form.toLowerCase()}`)}`} className="inline-flex items-center rounded-md bg-maroon-700 px-4 py-2 text-sm font-semibold text-white hover:bg-maroon-600">
+            <a href={`mailto:${email}?subject=${encodeURIComponent(`Re: your ${s.form.toLowerCase()}`)}`} className="inline-flex items-center justify-center rounded-md bg-maroon-700 px-4 py-2 text-sm font-semibold text-white hover:bg-maroon-600">
               Reply by email
             </a>
           )}

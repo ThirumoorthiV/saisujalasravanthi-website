@@ -1,20 +1,22 @@
 import { Award, FileCheck2, Globe2, Landmark, Scale } from "lucide-react";
 import { Link } from "react-router-dom";
-import { DONATION } from "@/data/site";
+import { DONATION, TAX_EXEMPTION } from "@/data/site";
 import { REPORTS } from "@/data/organisation";
 import { POLICIES } from "@/data/policies";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
 import { MediaCard } from "@/components/ui/Cards";
-import { PendingBadge, Section, SectionHeading } from "@/components/ui/Primitives";
+import { Section, SectionHeading } from "@/components/ui/Primitives";
 import { ReportList } from "@/components/ui/ReportList";
 import { breadcrumbSchema, Seo } from "@/lib/seo";
 
 const ROOT = { name: "Home", path: "/" };
 const TRANSPARENCY = { name: "Transparency", path: "/transparency/" };
 
-const fcraDocs = REPORTS.filter((r) => r.title.startsWith("FCRA"));
-const others = REPORTS.filter((r) => !r.title.startsWith("FCRA"));
+// FCRA documents (by type, or older ones by title) get their own section.
+const isFcra = (r: (typeof REPORTS)[number]) => r.type === "FCRA Document" || r.title.startsWith("FCRA");
+const fcraDocs = REPORTS.filter(isFcra);
+const others = REPORTS.filter((r) => !isFcra(r));
 
 const SECTIONS = [
   { title: "FCRA", text: "Registration, bank details and FCRA returns for foreign contributions.", to: "/transparency/fcra/", image: "/images/free/donation-make-a-change.webp" },
@@ -49,8 +51,17 @@ export function TransparencyOverview() {
         <SectionHeading eyebrow="Registration & governance" title="Who we are, on record" />
         <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
           {[
-            { icon: Landmark, title: "Registration details", rows: ["Sri Sathya Sai Sujala Sravanthi Trust", "Established: 2012, Hyderabad", "Registration no.: —", "PAN: —"] },
-            { icon: Award, title: "Tax exemptions", rows: ["12A registration: —", "80G registration: —", "CSR-1 registration: —"] },
+            { icon: Landmark, title: "Registration details", rows: ["Sri Sathya Sai Sujala Sravanthi Trust", "Established: 2012, Hyderabad"] },
+            {
+              icon: Award,
+              title: "Tax exemption details",
+              rows: [
+                `Sec 12A URN: ${TAX_EXEMPTION.sec12A}`,
+                `Sec 80G URN: ${TAX_EXEMPTION.sec80G}`,
+                `FCRA Reg. No.: ${DONATION.fcra.registrationNo}`,
+                `CSR Reg. No.: ${TAX_EXEMPTION.csr}`,
+              ],
+            },
             { icon: Scale, title: "Governance", rows: ["Board of Trustees", "Annual statutory audit", `FCRA Reg. No. ${DONATION.fcra.registrationNo}`] },
           ].map(({ icon: I, title, rows }) => (
             <div key={title} className="flex h-full flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-ink-200/70 md:p-5 lg:p-6">
@@ -66,9 +77,6 @@ export function TransparencyOverview() {
             </div>
           ))}
         </div>
-        <p className="mt-6 text-sm text-ink-600">
-          Fields marked “—” <PendingBadge>awaiting details from the Trust</PendingBadge>
-        </p>
       </Section>
 
       <Section tone="white">

@@ -181,13 +181,12 @@ export function OurJourney() {
               <span className="absolute -left-[41px] flex h-5 w-5 items-center justify-center rounded-full bg-maroon-700 ring-4 ring-cream" aria-hidden>
                 <span className="h-2 w-2 rounded-full bg-gold-500" />
               </span>
-              <p className="font-heading text-2xl font-bold text-maroon-700">{m.year}</p>
+              {m.year !== "—" && <p className="font-heading text-2xl font-bold text-maroon-700">{m.year}</p>}
               <h3 className="mt-1 text-xl font-semibold text-ink-900">{m.title}</h3>
               <p className="mt-1 text-ink-600">{m.text}</p>
             </li>
           ))}
         </ol>
-        <p className="mx-auto mt-10 max-w-3xl text-sm text-ink-600">Milestone dates marked “—” are awaiting confirmation from the Trust.</p>
       </Section>
     </>
   );

@@ -96,53 +96,40 @@ export function StaffPage() {
       {!staff ? (
         <Spinner />
       ) : (
-        <div className="mb-8 overflow-x-auto rounded-lg border border-ink-200 bg-white md:overflow-visible">
-          <table className="w-full text-left text-[15px]">
-            <thead className="bg-maroon-50 text-sm">
-              <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Role</th>
-                <th className="px-4 py-2">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-200">
-              {staff.map((m) => (
-                <tr key={m.uid}>
-                  <td className="px-4 py-2 font-semibold">
-                    <span className="flex items-center gap-3">
-                      <Avatar name={m.name} photo={m.photo} className="h-9 w-9 text-sm" />
-                      {m.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2">{m.email}</td>
-                  <td className="px-4 py-2">
-                    {m.uid === me.uid ? (
-                      "Admin (you)"
-                    ) : (
-                      <Dropdown
-                        ariaLabel={`Role for ${m.name}`}
-                        value={m.role}
-                        onChange={(v) => update(m, v as StaffMember["role"])}
-                        options={ROLE_OPTIONS}
-                        className="w-36"
-                      />
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    {m.uid !== me.uid && (
-                      <Button variant="ghost" onClick={() => update(m, null)}>
-                        Remove
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        // A list rather than a table, so it fits phones: name and email, then role and Remove.
+        <ul className="mb-8 divide-y divide-ink-200 rounded-lg border border-ink-200 bg-white">
+          {staff.map((m) => (
+            <li key={m.uid} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 md:flex-col md:items-stretch md:gap-3 lg:flex-row lg:items-center lg:gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <Avatar name={m.name} photo={m.photo} className="h-10 w-10 text-sm" />
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-ink-900">{m.name}</p>
+                  <p className="truncate text-sm text-ink-600" title={m.email}>
+                    {m.email}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pl-[52px] sm:pl-0 md:pl-[52px] lg:pl-0">
+                {m.uid === me.uid ? (
+                  <span className="rounded-full bg-maroon-50 px-3 py-1 text-sm font-semibold text-maroon-700">Admin (you)</span>
+                ) : (
+                  <>
+                    <Dropdown
+                      ariaLabel={`Role for ${m.name}`}
+                      value={m.role}
+                      onChange={(v) => update(m, v as StaffMember["role"])}
+                      options={ROLE_OPTIONS}
+                      className="w-36"
+                    />
+                    <Button variant="ghost" onClick={() => update(m, null)}>
+                      Remove
+                    </Button>
+                  </>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
 
       <Card className="max-w-2xl">
@@ -173,7 +160,7 @@ export function StaffPage() {
             />
           </div>
           <div className="flex items-end">
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" disabled={busy} className="w-full sm:w-auto">
               {busy ? "Creating…" : "Create account & send invite"}
             </Button>
           </div>
@@ -184,16 +171,16 @@ export function StaffPage() {
           <p className="mt-2 text-sm text-ink-600">
             When someone with a login but no access signs in, the CMS shows their User ID. Paste it here with the name and email above.
           </p>
-          <form onSubmit={add} className="mt-3 flex flex-wrap gap-2">
+          <form onSubmit={add} className="mt-3 flex flex-col gap-2 sm:flex-row">
             <input
               required
               aria-label="User ID"
               placeholder="User ID"
               value={form.uid}
               onChange={(e) => setForm({ ...form, uid: e.target.value })}
-              className={`${inputClass} max-w-sm font-mono`}
+              className={`${inputClass} font-mono sm:max-w-sm`}
             />
-            <Button type="submit" variant="secondary" disabled={busy}>
+            <Button type="submit" variant="secondary" disabled={busy} className="w-full shrink-0 sm:w-auto">
               Give access
             </Button>
           </form>

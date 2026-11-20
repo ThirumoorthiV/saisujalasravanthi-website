@@ -1,21 +1,40 @@
-// Admin-only: who changed what in the CMS, and when (the `activity` collection).
+// Who changed what in the CMS, and when (the `activity` collection): the admin-only
+// Recent activity page, and the Dashboard panel (everyone's changes for admins, your own for editors).
 import type { QueryDocumentSnapshot } from "firebase/firestore";
-import { ArrowRight, History, Search, X } from "lucide-react";
+import {
+  ArrowRight,
+  Download,
+  EyeOff,
+  FilePlus2,
+  FileText,
+  History,
+  Pencil,
+  Search,
+  Send,
+  Trash2,
+  UserCog,
+  UserMinus,
+  UserPlus,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Dropdown } from "@/components/ui/Dropdown";
-import { listActivity, listStaff, type ActivityAction, type ActivityEntry } from "./api";
+import { useStaff } from "./AdminApp";
+import { listActivity, listMyActivity, listStaff, type ActivityAction, type ActivityEntry } from "./api";
 import { COLLECTIONS, COLLECTION_LIST, type CollectionName } from "./collections";
 import { Avatar, Button, Card, errorMessage, inputClass, Notice, PageTitle, Spinner, timeAgo } from "./ui";
 
 const PAGE_SIZE = 100;
+const PANEL_SIZE = 6;
 
 const ACTIONS: Record<ActivityAction, { label: string; badge: string }> = {
   created: { label: "Published new", badge: "bg-green-100 text-success" },
   published: { label: "Published", badge: "bg-green-100 text-success" },
   updated: { label: "Updated", badge: "bg-maroon-50 text-maroon-700" },
   draft: { label: "Saved draft", badge: "bg-ink-200 text-ink-600" },
-  unpublished: { label: "Moved to drafts", badge: "bg-gold-100 text-ink-900" },
+  unpublished: { label: "Unpublished", badge: "bg-gold-100 text-ink-900" },
   deleted: { label: "Deleted", badge: "bg-red-100 text-error" },
   imported: { label: "Imported", badge: "bg-gold-100 text-ink-900" },
   staff_added: { label: "Added staff", badge: "bg-maroon-50 text-maroon-700" },
@@ -40,14 +59,15 @@ function dayLabel(d: Date) {
   return d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 
-/** Profile photos, so each row shows the person's avatar. */
-function useStaffPhotos() {
+/** Profile photos, so each row shows the person's avatar (admins only can list staff). */
+function useStaffPhotos(enabled = true) {
   const [photos, setPhotos] = useState<Record<string, string | undefined>>({});
   useEffect(() => {
+    if (!enabled) return;
     listStaff()
       .then((list) => setPhotos(Object.fromEntries(list.map((s) => [s.uid, s.photo]))))
       .catch(() => {});
-  }, []);
+  }, [enabled]);
   return photos;
 }
 
@@ -56,7 +76,7 @@ function ActionBadge({ action }: { action: ActivityAction }) {
   return <span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ${a.badge}`}>{a.label}</span>;
 }
 
-function ActivityRow({ entry, photo, onView, compact = false }: { entry: ActivityEntry; photo?: string; onView: () => void; compact?: boolean }) {
+function ActivityRow({ entry, photo, onView }: { entry: ActivityEntry; photo?: string; onView: () => void }) {
   const when = entry.at?.toDate();
   const changes = entry.changes ?? [];
   return (
@@ -68,12 +88,12 @@ function ActivityRow({ entry, photo, onView, compact = false }: { entry: Activit
           <ActionBadge action={entry.action} />
           <span className="text-sm text-ink-600">{sectionLabel(entry.section)}</span>
         </div>
-        <Link to={linkFor(entry)} className="mt-0.5 block truncate text-[15px] font-semibold text-maroon-700 hover:underline">
+        <Link to={linkFor(entry)} className="mt-0.5 line-clamp-2 text-[15px] font-semibold leading-snug text-maroon-700 hover:underline">
           {entry.title}
         </Link>
         {changes.length > 0 && (
           <p className="mt-1 text-sm text-ink-600">
-            {!compact && <span>Changed: {changes.map((c) => c.field).join(", ")} · </span>}
+            <span>Changed: {changes.map((c) => c.field).join(", ")} · </span>
             <button type="button" onClick={onView} className="font-semibold text-maroon-700 hover:underline">
               View {changes.length === 1 ? "change" : `${changes.length} changes`}
             </button>
@@ -81,7 +101,7 @@ function ActivityRow({ entry, photo, onView, compact = false }: { entry: Activit
         )}
       </div>
       <time dateTime={when?.toISOString()} title={fullDate(when)} className="shrink-0 whitespace-nowrap pt-0.5 text-[13px] text-ink-600">
-        {when ? (compact ? timeAgo(when) : when.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })) : "just now"}
+        {when ? when.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : "just now"}
       </time>
     </li>
   );
@@ -144,8 +164,8 @@ function ChangesDialog({ entry, onClose }: { entry: ActivityEntry | null; onClos
               </div>
             ))}
           </div>
-          <div className="flex justify-end gap-2 border-t border-ink-200 bg-cream px-6 py-3">
-            <Link to={linkFor(entry)} className="inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-maroon-700 hover:bg-maroon-50">
+          <div className="grid grid-cols-2 gap-2 border-t border-ink-200 bg-cream px-4 py-3 sm:flex sm:justify-end sm:px-6">
+            <Link to={linkFor(entry)} className="inline-flex items-center justify-center rounded-md border border-maroon-700 px-4 py-2 text-sm font-semibold text-maroon-700 hover:bg-maroon-50 sm:border-transparent">
               Open {entry.section === "staff" ? "Staff access" : "item"}
             </Link>
             <Button onClick={() => dialog.current?.close()}>Close</Button>
@@ -255,7 +275,7 @@ export function ActivityPage() {
             { value: "published", label: "Published" },
             { value: "updated", label: "Updated" },
             { value: "draft", label: "Saved draft" },
-            { value: "unpublished", label: "Moved to drafts" },
+            { value: "unpublished", label: "Unpublished" },
             { value: "deleted", label: "Deleted" },
             { value: "staff_added", label: "Added staff" },
             { value: "staff_role", label: "Changed role" },
@@ -305,7 +325,7 @@ export function ActivityPage() {
 
       {entries && cursor && (
         <div className="mt-6 text-center">
-          <Button variant="secondary" onClick={() => load(true)} disabled={loadingMore}>
+          <Button variant="secondary" onClick={() => load(true)} disabled={loadingMore} className="w-full sm:w-auto">
             {loadingMore ? "Loading…" : "Load older activity"}
           </Button>
           {filtered && <p className="mt-2 text-[13px] text-ink-600">Filters apply to the activity loaded so far.</p>}
@@ -317,45 +337,200 @@ export function ActivityPage() {
   );
 }
 
-/** The last 5 changes, for the admin Dashboard. */
-export function RecentActivityCard() {
-  const [entries, setEntries] = useState<ActivityEntry[]>();
+
+/**
+ * The Dashboard's side panel: admins see the latest changes by everyone ("Recent activity");
+ * editors see only their own ("My recent changes"), so they can jump back to their work.
+ */
+export function ActivityPanel({ mine }: { mine: boolean }) {
+  const staff = useStaff();
+  const [groups, setGroups] = useState<PanelGroup[]>();
+  const [failed, setFailed] = useState(false);
   const [viewing, setViewing] = useState<ActivityEntry | null>(null);
-  const photos = useStaffPhotos();
+  const photos = useStaffPhotos(!mine);
 
   useEffect(() => {
-    listActivity(5)
-      .then((page) => setEntries(page.entries))
-      .catch(() => setEntries([]));
-  }, []);
+    // Fetch a few more than we show: repeated saves of the same item collapse into one line.
+    (mine ? listMyActivity(staff.uid, PANEL_FETCH) : listActivity(PANEL_FETCH).then((page) => page.entries))
+      .then((list) => setGroups(groupEntries(list).slice(0, PANEL_SIZE)))
+      .catch(() => {
+        setFailed(true);
+        setGroups([]);
+      });
+  }, [mine, staff.uid]);
+
+  // Split into "Today", "Yesterday", …
+  const days: { label: string; items: PanelGroup[] }[] = [];
+  for (const g of groups ?? []) {
+    const label = dayLabel(g.entry.at?.toDate() ?? new Date());
+    if (days[days.length - 1]?.label === label) days[days.length - 1].items.push(g);
+    else days.push({ label, items: [g] });
+  }
 
   return (
-    <section className="mb-8">
-      <div className="mb-3 flex items-end justify-between gap-3">
+    <section aria-labelledby="activity-panel-title" className="rounded-xl border border-ink-200 bg-white shadow-sm">
+      <div className="flex items-start justify-between gap-3 border-b border-ink-200 px-5 py-3.5">
         <div>
-          <h2 className="font-heading text-xl font-bold text-maroon-900">Recent activity</h2>
-          <p className="text-sm text-ink-600">The latest changes made in the CMS.</p>
+          <h2 id="activity-panel-title" className="font-heading text-lg font-bold text-maroon-900">
+            {mine ? "My recent changes" : "Recent activity"}
+          </h2>
+          <p className="text-sm text-ink-600">{mine ? "Your latest changes." : "Latest changes in the CMS."}</p>
         </div>
-        <Link to="/activity" className="whitespace-nowrap text-sm font-semibold text-maroon-700 hover:underline">
-          View all →
-        </Link>
+        {!mine && (
+          <Link to="/activity" className="-mr-2 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-sm font-semibold text-maroon-700 hover:bg-maroon-50">
+            View all <ArrowRight size={14} aria-hidden />
+          </Link>
+        )}
       </div>
-      {!entries ? (
-        <Card>
-          <p className="text-ink-600">Loading…</p>
-        </Card>
-      ) : entries.length === 0 ? (
-        <Card>
-          <p className="text-ink-600">No activity yet. Changes made in the CMS from now on will appear here.</p>
-        </Card>
-      ) : (
-        <ul className="divide-y divide-ink-200 overflow-hidden rounded-lg border border-ink-200 bg-white">
-          {entries.map((e) => (
-            <ActivityRow key={e.id} entry={e} photo={photos[e.uid]} onView={() => setViewing(e)} compact />
-          ))}
-        </ul>
-      )}
+      <div className="px-5 pb-5">
+        {!groups ? (
+          <div className="mt-4 space-y-4" aria-label="Loading">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex animate-pulse gap-3">
+                <span className="h-8 w-8 shrink-0 rounded-full bg-ink-200/70" />
+                <span className="flex-1 space-y-2 pt-1">
+                  <span className="block h-3 w-1/2 rounded bg-ink-200/70" />
+                  <span className="block h-3 w-4/5 rounded bg-ink-200/70" />
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : groups.length === 0 ? (
+          <p className="mt-3 rounded-lg bg-cream px-4 py-5 text-center text-sm text-ink-600">
+            {failed
+              ? "Couldn't load recent changes. If this continues, ask an admin to publish the latest Firestore rules."
+              : mine
+                ? "Nothing yet. Changes you make in the CMS will show here, so you can jump back to them."
+                : "No activity yet. Changes made in the CMS will show here."}
+          </p>
+        ) : (
+          days.map((day) => (
+            <div key={day.label} className="mt-4">
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600">{day.label}</h3>
+              <ol>
+                {day.items.map((g, i) => (
+                  <PanelItem
+                    key={g.entry.id}
+                    group={g}
+                    photo={photos[g.entry.uid]}
+                    mine={mine}
+                    last={i === day.items.length - 1}
+                    onView={() => setViewing(g.entry)}
+                  />
+                ))}
+              </ol>
+            </div>
+          ))
+        )}
+      </div>
       <ChangesDialog entry={viewing} onClose={() => setViewing(null)} />
     </section>
+  );
+}
+
+const PANEL_FETCH = 30;
+
+/** How each action reads in the panel ("Thiru updated …"), with an icon and colour. */
+const PANEL_ACTIONS: Record<ActivityAction, { verb: string; icon: LucideIcon; tone: string }> = {
+  created: { verb: "published new", icon: FilePlus2, tone: "bg-green-100 text-success" },
+  published: { verb: "published", icon: Send, tone: "bg-green-100 text-success" },
+  updated: { verb: "updated", icon: Pencil, tone: "bg-maroon-50 text-maroon-700" },
+  draft: { verb: "saved a draft of", icon: FileText, tone: "bg-ink-200 text-ink-600" },
+  unpublished: { verb: "unpublished", icon: EyeOff, tone: "bg-gold-100 text-ink-900" },
+  deleted: { verb: "deleted", icon: Trash2, tone: "bg-red-100 text-error" },
+  imported: { verb: "imported", icon: Download, tone: "bg-gold-100 text-ink-900" },
+  staff_added: { verb: "gave CMS access to", icon: UserPlus, tone: "bg-maroon-50 text-maroon-700" },
+  staff_role: { verb: "changed the role of", icon: UserCog, tone: "bg-maroon-50 text-maroon-700" },
+  staff_removed: { verb: "removed access for", icon: UserMinus, tone: "bg-red-100 text-error" },
+};
+
+interface PanelGroup {
+  entry: ActivityEntry;
+  /** How many saves this line stands for (the same person editing the same item in a row). */
+  count: number;
+}
+
+/**
+ * Collapse back-to-back saves of the same item by the same person on the same day into one line
+ * ("updated · 4 edits"), combining their changes: each field's first "before" and last "after".
+ */
+function groupEntries(list: ActivityEntry[]): PanelGroup[] {
+  const out: PanelGroup[] = [];
+  const day = (e: ActivityEntry) => (e.at?.toDate() ?? new Date()).toDateString();
+  for (const e of list) {
+    const prev = out[out.length - 1];
+    const same =
+      prev &&
+      (e.action === "updated" || e.action === "draft") &&
+      prev.entry.action === e.action &&
+      prev.entry.uid === e.uid &&
+      prev.entry.section === e.section &&
+      prev.entry.itemId === e.itemId &&
+      day(prev.entry) === day(e);
+    if (!same) {
+      out.push({ entry: e, count: 1 });
+      continue;
+    }
+    // `e` is the older save: its "before" values are the starting point.
+    const changes = [...(prev.entry.changes ?? [])];
+    for (const c of e.changes ?? []) {
+      const i = changes.findIndex((x) => x.field === c.field);
+      if (i >= 0) changes[i] = { ...changes[i], before: c.before };
+      else changes.push(c);
+    }
+    prev.entry = { ...prev.entry, changes: changes.filter((c) => c.before !== c.after) };
+    prev.count++;
+  }
+  return out;
+}
+
+function PanelItem({ group, photo, mine, last, onView }: { group: PanelGroup; photo?: string; mine: boolean; last: boolean; onView: () => void }) {
+  const { entry, count } = group;
+  const when = entry.at?.toDate();
+  const a = PANEL_ACTIONS[entry.action] ?? { verb: entry.action, icon: Pencil, tone: "bg-ink-200 text-ink-600" };
+  const Icon = a.icon;
+  const changes = entry.changes ?? [];
+  return (
+    <li className={`relative flex gap-3 ${last ? "" : "pb-4"}`}>
+      {/* The timeline line joining one change to the next. */}
+      {!last && <span className="absolute bottom-0 left-4 top-10 w-px -translate-x-1/2 bg-ink-200" aria-hidden />}
+      <div className="relative h-8 w-8 shrink-0">
+        {mine ? (
+          <span className={`flex h-8 w-8 items-center justify-center rounded-full ${a.tone}`}>
+            <Icon size={15} aria-hidden />
+          </span>
+        ) : (
+          <>
+            <Avatar name={entry.name} photo={photo} className="h-8 w-8 text-xs" />
+            <span className={`absolute -bottom-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full ring-2 ring-white ${a.tone}`}>
+              <Icon size={10} strokeWidth={2.5} aria-hidden />
+            </span>
+          </>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] leading-5 text-ink-600">
+          <strong className="font-semibold text-ink-900">{mine ? "You" : entry.name}</strong> {a.verb}
+          {count > 1 && <span className="ml-1.5 whitespace-nowrap rounded bg-ink-200/60 px-1.5 py-px text-[11px] font-semibold text-ink-600">{count} edits</span>}
+        </p>
+        <Link to={linkFor(entry)} title={entry.title} className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-ink-900 hover:text-maroon-700 hover:underline">
+          {entry.title}
+        </Link>
+        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-ink-600">
+          <span className="rounded bg-ink-200/50 px-1.5 py-px font-medium text-ink-900">{sectionLabel(entry.section)}</span>
+          <time dateTime={when?.toISOString()} title={fullDate(when)}>
+            {when ? timeAgo(when) : "just now"}
+          </time>
+          {changes.length > 0 && (
+            <>
+              <span aria-hidden>·</span>
+              <button type="button" onClick={onView} className="font-semibold text-maroon-700 hover:underline">
+                What changed?
+              </button>
+            </>
+          )}
+        </p>
+      </div>
+    </li>
   );
 }

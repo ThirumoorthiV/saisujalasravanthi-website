@@ -19,6 +19,13 @@ export const SITE = {
   // Social links ("Follow us") are in data/social.ts, managed in the CMS → Social media.
 };
 
+/** Tax exemption and registration numbers (Unique Registration Numbers from the Income Tax Department). */
+export const TAX_EXEMPTION = {
+  sec12A: "AALTS5059GE20212",
+  sec80G: "AALTS5059GF20210",
+  csr: "CSR00022220",
+};
+
 /** Donation details from saisujalasravanthi.in/donation. */
 export const DONATION = {
   domesticUrl: "https://www.saiaarogya.hospital/donateus",

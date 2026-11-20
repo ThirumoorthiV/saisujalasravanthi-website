@@ -1,16 +1,43 @@
 import { useEffect, useState } from "react";
+import {
+  BookOpen,
+  Building2,
+  CalendarDays,
+  FileText,
+  HeartHandshake,
+  Images,
+  Lightbulb,
+  MapPin,
+  Plus,
+  Share2,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useStaff } from "./AdminApp";
-import { RecentActivityCard } from "./Activity";
+import { ActivityPanel } from "./Activity";
 import { getSiteMeta, importBuiltInContent, isImported, listItems, type SiteMeta } from "./api";
 import { COLLECTION_LIST, type CollectionDef, type CollectionName } from "./collections";
 import { Button, buttonClass, Card, errorMessage, Notice, PageTitle, Spinner } from "./ui";
 
+/** Same icons as the sidebar. */
+const ICONS: Partial<Record<CollectionName, LucideIcon>> = {
+  stories: BookOpen,
+  events: CalendarDays,
+  gallery: Images,
+  programmes: HeartHandshake,
+  leadership: UserRound,
+  centres: MapPin,
+  partners: Building2,
+  social: Share2,
+  reports: FileText,
+};
+
 type Counts = Partial<Record<CollectionName, { published: number; drafts: number }>>;
 
 const GROUPS: { key: CollectionDef["group"]; title: string; text: string }[] = [
-  { key: "updates", title: "Regular updates", text: "Blog posts (including Beneficiary & Volunteer Stories and Media & Press), Events and Gallery photos." },
-  { key: "pages", title: "Website pages", text: "Our Programmes, Leadership, Our Network, Our Partners and the Follow us social links." },
+  { key: "updates", title: "Regular updates", text: "Blog posts and stories, events and gallery photos." },
+  { key: "pages", title: "Website pages", text: "Programmes, leadership, centres, partners, social links and reports." },
 ];
 
 export function Dashboard() {
@@ -89,51 +116,83 @@ export function Dashboard() {
           </Notice>
         ))}
 
-      {staff.role === "admin" && <RecentActivityCard />}
+      {/* Desktop: the sections on the left, recent activity and tips on the right.
+          Tablet/phone: one column. */}
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="min-w-0 space-y-6">
+          {GROUPS.map((group) => (
+            <section key={group.key} aria-labelledby={`group-${group.key}`} className="overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm">
+              <div className="border-b border-ink-200 px-4 py-3.5 sm:px-5">
+                <h2 id={`group-${group.key}`} className="font-heading text-lg font-bold text-maroon-900">
+                  {group.title}
+                </h2>
+                <p className="text-sm text-ink-600">{group.text}</p>
+              </div>
+              <ul className="divide-y divide-ink-200">
+                {sections
+                  .filter((d) => d.group === group.key)
+                  .map((def) => {
+                    const c = counts?.[def.name];
+                    const Icon = ICONS[def.name] ?? FileText;
+                    return (
+                      <li key={def.name} className="flex flex-col gap-3 px-4 py-3.5 transition-colors hover:bg-cream sm:flex-row sm:items-center sm:gap-4 sm:px-5 md:flex-col md:items-stretch md:gap-3 lg:flex-row lg:items-center lg:gap-4">
+                        <Link to={`/${def.name}`} className="group flex min-w-0 items-center gap-3 sm:flex-1 md:flex-none lg:flex-1">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon-50 text-maroon-700">
+                            <Icon size={19} aria-hidden />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-semibold text-ink-900 group-hover:text-maroon-700">{def.label}</span>
+                            <span className="flex flex-wrap items-center gap-x-2 text-[13px] text-ink-600">
+                              {isImported(meta, def.name) && c ? (
+                                <>
+                                  <span>{c.published} published</span>
+                                  {c.drafts > 0 && (
+                                    <span className="rounded bg-gold-100 px-1.5 text-[12px] font-semibold text-ink-900">
+                                      {c.drafts} draft{c.drafts === 1 ? "" : "s"}
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                "Not imported yet"
+                              )}
+                            </span>
+                          </span>
+                        </Link>
+                        <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0 md:grid lg:flex">
+                          <Link to={`/${def.name}`} className={`${buttonClass("neutral")} whitespace-nowrap px-3 py-1.5`}>
+                            View all
+                          </Link>
+                          <Link to={`/${def.name}/new`} className={`${buttonClass()} whitespace-nowrap px-3 py-1.5 sm:w-44 md:w-auto lg:w-44`}>
+                            <Plus size={15} aria-hidden /> Add {def.singular}
+                          </Link>
+                        </div>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </section>
+          ))}
+        </div>
 
-      {GROUPS.map((group) => (
-        <section key={group.key} className="mb-8">
-          <h2 className="font-heading text-xl font-bold text-maroon-900">{group.title}</h2>
-          <p className="mb-3 text-sm text-ink-600">{group.text}</p>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {sections.filter((d) => d.group === group.key).map((def) => {
-              const c = counts?.[def.name];
-              return (
-                <Card key={def.name} className="flex flex-col">
-                  <h3 className="font-heading text-lg font-bold text-maroon-900">{def.label}</h3>
-                  <p className="mt-1 text-[15px] text-ink-600">
-                    {isImported(meta, def.name) && c
-                      ? `${c.published} published · ${c.drafts} draft${c.drafts === 1 ? "" : "s"}`
-                      : "Not imported yet"}
-                  </p>
-                  <div className="mt-auto flex flex-wrap gap-2 pt-4">
-                    <Link to={`/${def.name}/new`} className={buttonClass()}>
-                      Add {def.singular}
-                    </Link>
-                    <Link to={`/${def.name}`} className={buttonClass("secondary")}>
-                      View all
-                    </Link>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
-      ))}
-
-      <Card>
-        <h2 className="font-heading text-lg font-bold text-maroon-900">How publishing works</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-[15px]">
-          <li>
-            <strong>Save draft</strong> keeps your work in the CMS only. <strong>Publish</strong> puts it on the website.
-          </li>
-          <li>Published changes appear on the website within about 15 minutes, after the site is automatically rebuilt.</li>
-          <li>Photos are resized automatically, so you can upload them straight from a phone or camera.</li>
-        </ul>
-        {meta?.updatedAt && (
-          <p className="mt-3 text-sm text-ink-600">Last change in the CMS: {meta.updatedAt.toDate().toLocaleString("en-IN")}</p>
-        )}
-      </Card>
+        <aside className="min-w-0 space-y-6">
+          <ActivityPanel mine={staff.role !== "admin"} />
+          <section aria-labelledby="publishing-help" className="rounded-xl border border-gold-500/40 bg-gold-100/60 px-5 py-4">
+            <h2 id="publishing-help" className="flex items-center gap-2 font-heading text-base font-bold text-maroon-900">
+              <Lightbulb size={17} aria-hidden /> How publishing works
+            </h2>
+            <ul className="mt-2 space-y-1.5 text-sm text-ink-900">
+              <li>
+                <strong>Save draft</strong> keeps your work in the CMS only. <strong>Publish</strong> puts it on the website.
+              </li>
+              <li>Published changes appear on the website within a few minutes.</li>
+              <li>Photos are resized automatically, so you can upload them straight from a phone.</li>
+            </ul>
+            {meta?.updatedAt && (
+              <p className="mt-3 text-[13px] text-ink-600">Last change: {meta.updatedAt.toDate().toLocaleString("en-IN")}</p>
+            )}
+          </section>
+        </aside>
+      </div>
     </>
   );
 }

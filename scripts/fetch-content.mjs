@@ -3,6 +3,7 @@
 //
 //   src/data/cms.generated.json   published stories, events and gallery photos
 //   public/images/cms/            photos uploaded in the CMS
+//   public/files/cms/             PDFs (reports) uploaded in the CMS
 //
 // Runs before `npm run dev` (with --dev: offline is fine, the last download or
 // the built-in content is used) and before `npm run build` (any error stops the
@@ -16,6 +17,7 @@ import { collection, doc, getDoc, getDocs, getFirestore, query, setLogLevel, whe
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outFile = path.join(root, "src/data/cms.generated.json");
 const imageDir = path.join(root, "public/images/cms");
+const fileDir = path.join(root, "public/files/cms");
 const devMode = process.argv.includes("--dev");
 // --watch (started by the dev server, see vite.config.ts): keep running and download
 // again whenever something is saved in the CMS, so the local site updates by itself.
@@ -32,6 +34,7 @@ const COLLECTIONS = {
   centres: { sort: "order", dir: 1 },
   social: { sort: "order", dir: 1 },
   partners: { sort: "order", dir: 1 },
+  reports: { sort: "year", dir: -1 },
 };
 // Imported by the first CMS import, before per-section imports existed.
 const FIRST_IMPORT = ["stories", "events", "gallery"];
@@ -127,9 +130,27 @@ async function main() {
     downloaded++;
   }
 
+  // PDFs uploaded in the CMS (Reports), referenced as /files/cms/<id>.pdf. A Firestore
+  // document holds at most 1 MB, so each PDF is stored in pieces: media/<id>/chunks/0, 1, …
+  const pdfs = new Set([...JSON.stringify(content).matchAll(/\/files\/cms\/([\w-]+)\.pdf/g)].map((m) => m[0]));
+  fs.mkdirSync(fileDir, { recursive: true });
+  for (const ref of pdfs) {
+    const file = path.join(root, "public", ref);
+    if (fs.existsSync(file)) continue;
+    const id = path.basename(ref, ".pdf");
+    const media = await getDoc(doc(db, "media", id));
+    if (!media.exists()) throw new Error(`CMS: PDF ${ref} is used but missing from the media collection`);
+    const chunks = await getDocs(collection(db, "media", id, "chunks"));
+    const parts = chunks.docs.map((d) => d.data()).sort((a, b) => a.index - b.index);
+    if (parts.length !== media.data().chunks) throw new Error(`CMS: PDF ${ref} is incomplete (${parts.length} of ${media.data().chunks} pieces)`);
+    const bytes = Buffer.concat(parts.map((p) => Buffer.from(p.bytes.toUint8Array())));
+    fs.writeFileSync(file, bytes);
+    downloaded++;
+  }
+
   write(content);
   console.log(
-    `CMS: ${names.map((n) => `${content[n].length} ${n}`).join(", ")} (${refs.size} uploaded photos, ${downloaded} new)`,
+    `CMS: ${names.map((n) => `${content[n].length} ${n}`).join(", ")} (${refs.size} uploaded photos, ${pdfs.size} PDFs, ${downloaded} new files)`,
   );
 }
 

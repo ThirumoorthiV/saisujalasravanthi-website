@@ -8,6 +8,7 @@
     "build": "node scripts/fetch-content.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-server && node scripts/prerender.mjs",
     "preview": "vite preview",
     "content": "node scripts/fetch-content.mjs",
+    "storage": "node scripts/storage-report.mjs",
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {

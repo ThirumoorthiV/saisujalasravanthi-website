@@ -162,8 +162,9 @@ export interface Partner {
 
 export interface Report {
   title: string;
-  type: "Annual Report" | "Financial Report" | "CSR Report" | "Impact Report" | "Policy" | "Certificate";
+  type: "Annual Report" | "Financial Report" | "CSR Report" | "Impact Report" | "FCRA Document" | "Policy" | "Certificate";
   year: string;
+  /** A PDF uploaded in the CMS (/files/cms/<id>.pdf), a full https:// link, or "#" while it isn't ready. */
   file: string;
 }
 

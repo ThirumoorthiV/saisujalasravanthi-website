@@ -46,16 +46,17 @@ export function ProfilePage() {
     <>
       <PageTitle>My profile</PageTitle>
 
-      <Card className="mb-6 flex flex-wrap items-center gap-5">
+      {/* Phones: photo, then name and details, then Sign out, all centred. From sm: one row. */}
+      <Card className="mb-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:gap-5 sm:text-left md:flex-col md:gap-4 md:text-center lg:flex-row lg:gap-5 lg:text-left">
         <PhotoPicker />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 sm:flex-1 md:flex-none lg:flex-1">
           <h2 className="break-words font-heading text-2xl font-bold text-maroon-900">{staff.name}</h2>
-          <p className="break-all text-ink-600">{user.email}</p>
+          <p className="break-words text-ink-600">{user.email}</p>
           <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-maroon-50 px-3 py-1 text-sm font-semibold text-maroon-700">
             <ShieldCheck size={15} aria-hidden /> {staff.role === "admin" ? "Admin" : "Editor"}
           </span>
         </div>
-        <Button variant="secondary" onClick={() => signOut(auth)}>
+        <Button variant="secondary" className="w-full sm:w-auto md:w-full lg:w-auto" onClick={() => signOut(auth)}>
           <LogOut size={16} aria-hidden /> Sign out
         </Button>
       </Card>
@@ -235,11 +236,11 @@ function NameForm() {
       </h2>
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
       <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
-        <label className="block min-w-[220px] flex-1 text-sm font-semibold">
+        <label className="block w-full text-sm font-semibold sm:w-auto sm:min-w-[220px] sm:flex-1">
           Name
           <input value={name} onChange={(e) => setName(e.target.value)} className={`${inputClass} mt-1`} maxLength={80} />
         </label>
-        <Button type="submit" disabled={busy || name.trim() === staff.name}>
+        <Button type="submit" disabled={busy || name.trim() === staff.name} className="w-full sm:w-auto">
           {busy ? "Saving…" : "Save name"}
         </Button>
       </form>
@@ -306,7 +307,7 @@ function PasswordForm() {
           </label>
         </div>
         <p className="text-[13px] text-ink-600">At least 8 characters.</p>
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" disabled={busy} className="w-full sm:w-auto">
           {busy ? "Changing…" : "Change password"}
         </Button>
       </form>

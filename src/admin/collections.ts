@@ -2,11 +2,11 @@
 // Field keys match the types in src/types, so published items drop straight
 // into the website (see scripts/fetch-content.mjs). Nested keys use dots.
 import { EVENT_CATEGORIES, SEED_EVENTS } from "@/data/events";
-import { SEED_CENTRES, SEED_GALLERY, SEED_LEADERSHIP, SEED_PARTNERS } from "@/data/organisation";
+import { SEED_CENTRES, SEED_GALLERY, SEED_LEADERSHIP, SEED_PARTNERS, SEED_REPORTS } from "@/data/organisation";
 import { getCategory, PROGRAMME_CATEGORIES, SEED_PROGRAMMES } from "@/data/programmes";
 import { SEED_STORIES, STORY_CATEGORIES } from "@/data/stories";
 import { PLATFORM_DOMAINS, SEED_SOCIAL, SOCIAL_PLATFORMS } from "@/data/social";
-import type { Centre, GalleryItem, IconName, Leader, SocialPlatform } from "@/types";
+import type { Centre, GalleryItem, IconName, Leader, Report, SocialPlatform } from "@/types";
 
 export type FieldType =
   | "text"
@@ -15,6 +15,7 @@ export type FieldType =
   | "number"
   | "select"
   | "image"
+  | "file" // a PDF uploaded in the CMS, or a link to one
   | "paragraphs" // string[], one paragraph per blank-line-separated block
   | "lines" // string[], one per line
   | "tags" // string[], comma separated
@@ -37,7 +38,7 @@ export interface Field {
   section?: string;
 }
 
-export type CollectionName = "stories" | "events" | "gallery" | "programmes" | "leadership" | "centres" | "partners" | "social";
+export type CollectionName = "stories" | "events" | "gallery" | "programmes" | "leadership" | "centres" | "partners" | "social" | "reports";
 
 export interface CollectionDef {
   name: CollectionName;
@@ -77,6 +78,14 @@ const GALLERY_GROUPS: GalleryItem["group"][] = ["Healthcare", "Education", "Rura
 const LEADER_ROLES: Leader["role"][] = ["Founder & Guiding Light", "Board of Trustees", "Advisory Council"];
 const CENTRE_TYPES: Centre["type"][] = ["Sai Swasthya Centre", "Hospital", "Screening Centre", "Office"];
 const CENTRE_STATES: Centre["state"][] = ["Telangana", "Andhra Pradesh", "Other"];
+const REPORT_TYPES: Report["type"][] = ["Annual Report", "Financial Report", "CSR Report", "Impact Report", "FCRA Document", "Certificate"];
+/** Which website page each report type is listed on. */
+const reportPage = (type: unknown) =>
+  type === "Financial Report"
+    ? "/transparency/financial-reports/"
+    : type === "FCRA Document" || type === "Certificate"
+      ? "/transparency/fcra/"
+      : "/transparency/annual-reports/";
 const ICONS: IconName[] = [
   "HeartPulse",
   "Stethoscope",
@@ -443,6 +452,55 @@ export const COLLECTIONS: Record<CollectionName, CollectionDef> = {
       return errors;
     },
   },
+
+  reports: {
+    name: "reports",
+    label: "Reports",
+    singular: "report",
+    group: "pages",
+    intro:
+      "Annual reports, audited financial statements, CSR and impact reports and FCRA documents (PDF). They're listed on Transparency → Annual Reports / Financial Reports / FCRA, and annual and impact reports also on Our Impact and CSR.",
+    titleField: "title",
+    sortField: "year",
+    sortDir: "desc",
+    subtitle: (r) => `${r.type ?? "Report"} · ${r.year || "No year"}${!r.file || r.file === "#" ? " · No PDF yet" : ""}`,
+    filter: { field: "type", label: "Type", options: opts(REPORT_TYPES) },
+    url: (r) => reportPage(r.type),
+    seed: () =>
+      SEED_REPORTS.map((r) => [`report-${r.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`, { ...r }]),
+    fields: [
+      { key: "title", label: "Title", type: "text", required: true, help: "As it should appear on the website, e.g. Annual Report 2025–26." },
+      {
+        key: "type",
+        label: "Type",
+        type: "select",
+        options: REPORT_TYPES,
+        required: true,
+        help: "Financial reports are listed on Financial Reports; FCRA documents and certificates under FCRA; the rest on Annual Reports.",
+      },
+      { key: "year", label: "Financial year", type: "text", required: true, help: "e.g. 2025–26. Newest years are listed first." },
+      {
+        key: "file",
+        label: "PDF",
+        type: "file",
+        required: true,
+        help: "Visitors can open and download it from the website.",
+      },
+    ],
+    validate: (r) => {
+      const errors: Record<string, string> = {};
+      const file = String(r.file ?? "");
+      if (file === "#" || !file) errors.file = "Upload the PDF or paste its link. Until it's ready, save this as a draft.";
+      else if (!file.startsWith("/files/cms/")) {
+        try {
+          if (new URL(file).protocol !== "https:") throw new Error();
+        } catch {
+          errors.file = "Paste the full link starting with https://";
+        }
+      }
+      return errors;
+    },
+  },
 };
 
 export const COLLECTION_LIST = Object.values(COLLECTIONS);
@@ -556,15 +614,20 @@ export function diffItems(def: CollectionDef, before: Record<string, unknown> | 
     const y = b[f.key] ?? (f.type === "checkbox" ? false : "");
     if (String(x).trim() === String(y).trim()) continue;
     const show = (v: string | boolean) =>
-      f.type === "checkbox" ? (v ? "Yes" : "No") : f.type === "image" ? (v ? "Photo" : "") : clip(String(v).trim());
+      f.type === "checkbox" ? (v ? "Yes" : "No") : f.type === "image" ? (v ? "Photo" : "") : f.type === "file" ? fileLabel(String(v)) : clip(String(v).trim());
+    const media = f.type === "image" || f.type === "file";
+    const noun = f.type === "image" ? "photo" : "PDF";
     changes.push({
       field: f.label,
-      before: f.type === "image" && x && y ? "Previous photo" : show(x),
-      after: f.type === "image" && x && y ? "New photo" : show(y),
+      before: media && x && y ? `Previous ${noun}` : show(x),
+      after: media && x && y ? `New ${noun}` : show(y),
     });
   }
   return changes;
 }
+
+/** How a "file" field's value reads in the change history. */
+const fileLabel = (v: string) => (!v || v === "#" ? "" : v.startsWith("/files/cms/") ? "Uploaded PDF" : clip(v));
 
 export const slugify = (text: string) =>
   text

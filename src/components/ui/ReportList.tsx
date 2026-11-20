@@ -15,7 +15,8 @@ export function ReportList({ items }: { items: Report[] }) {
               <span>
                 <span className="block font-medium text-ink-900">{r.title}</span>
                 <span className="block text-sm text-ink-600">
-                  {r.type} · {r.year}
+                  {r.type}
+                  {r.year && r.year !== "—" ? ` · ${r.year}` : ""}
                 </span>
               </span>
             </span>
@@ -29,7 +30,7 @@ export function ReportList({ items }: { items: Report[] }) {
           </>
         );
         return (
-          <li key={r.title}>
+          <li key={`${r.title}-${r.year}`}>
             {pending ? (
               <div className="flex min-h-[64px] items-center justify-between gap-4 px-5 py-3">{inner}</div>
             ) : (

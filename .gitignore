@@ -6,6 +6,7 @@ dist-server
 # Downloaded from the CMS at build time (scripts/fetch-content.mjs)
 src/data/cms.generated.json
 public/images/cms/
+public/files/cms/
 
 # Local settings (put the same values in GitHub → Settings → Secrets and variables → Actions → Variables,
 # and in Vercel → Project → Settings → Environment Variables)

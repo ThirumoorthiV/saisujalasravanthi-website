@@ -2,7 +2,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { Dropdown } from "@/components/ui/Dropdown";
-import { deleteItem, getItem, getSiteMeta, isImported, listItems, photoPreviewUrl, saveItem, uploadPhoto, type Item } from "./api";
+import { FileText } from "lucide-react";
+import {
+  deleteItem,
+  getItem,
+  getSiteMeta,
+  isImported,
+  listItems,
+  MAX_PDF_MB,
+  pdfInfo,
+  pdfUrl,
+  photoPreviewUrl,
+  saveItem,
+  uploadPdf,
+  uploadPhoto,
+  type Item,
+} from "./api";
 import { COLLECTIONS, fromForm, slugify, sortItems, toForm, type CollectionDef, type CollectionName, type Field, type FormValues } from "./collections";
 import { useConfirm } from "./confirm";
 import { Button, buttonClass, Card, errorMessage, inputClass, Notice, PageTitle, Spinner, StatusBadge, timeAgo } from "./ui";
@@ -121,14 +136,20 @@ export function ContentList() {
         <ul className="divide-y divide-ink-200 overflow-hidden rounded-lg border border-ink-200 bg-white">
           {shown.map((item) => (
             <li key={item.id}>
-              <Link to={`/${def.name}/edit/${item.id}`} className="flex items-center gap-4 px-4 py-3 hover:bg-maroon-50">
+              <Link to={`/${def.name}/edit/${item.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-maroon-50 sm:gap-4">
                 {def.imageField && <Thumb path={str(item[def.imageField])} />}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold text-ink-900">{str(item[def.titleField]) || "(untitled)"}</span>
-                  <span className="block truncate text-sm text-ink-600">{def.subtitle(item)}</span>
+                  <span className="line-clamp-2 font-semibold leading-snug text-ink-900">{str(item[def.titleField]) || "(untitled)"}</span>
+                  <span className="mt-0.5 block truncate text-sm text-ink-600">{def.subtitle(item)}</span>
                   <UpdatedBy item={item} className="mt-0.5 block truncate text-[13px]" />
+                  {/* Phones: the status goes under the title, so the title gets the full width. */}
+                  <span className="mt-1.5 block sm:hidden">
+                    <StatusBadge published={item.published} />
+                  </span>
                 </span>
-                <StatusBadge published={item.published} />
+                <span className="hidden shrink-0 sm:block">
+                  <StatusBadge published={item.published} />
+                </span>
               </Link>
             </li>
           ))}
@@ -236,6 +257,19 @@ export function ContentEditor() {
   };
 
   const save = async (publish: boolean) => {
+    // Unpublishing takes it off the website, so ask first.
+    if (
+      !publish &&
+      original?.published &&
+      !(await confirm({
+        title: `Unpublish this ${def.singular}?`,
+        message: `It will be removed from the website within a few minutes. It stays here in the CMS as a draft (with any changes you made), so you can publish it again at any time.`,
+        confirmLabel: "Yes, unpublish",
+        cancelLabel: "Keep it published",
+        danger: false,
+      }))
+    )
+      return;
     const { item, errors } = fromForm(def, values, publish);
     setErrors(errors);
     if (Object.keys(errors).length) {
@@ -256,7 +290,7 @@ export function ContentEditor() {
             ? "Published. The website is updating now; your change will be live in about 2–3 minutes."
             : "Published. It will appear on the website within about 15 minutes."
           : original?.published
-            ? `Moved to drafts. It will be removed from the website in about ${autoUpdate ? "2–3" : "15"} minutes.`
+            ? `Unpublished. It's now a draft and will be removed from the website in about ${autoUpdate ? "2–3" : "15"} minutes. Click Publish to put it back.`
             : "Draft saved. It is not on the website.",
       });
       if (!id) navigate(`/${def.name}/edit/${savedId}`, { replace: true });
@@ -357,13 +391,13 @@ export function ContentEditor() {
             {published ? "Update on website" : "Publish"}
           </Button>
           <Button variant="secondary" onClick={() => save(false)} disabled={busy}>
-            {published ? "Move to drafts" : "Save draft"}
+            {published ? "Unpublish" : "Save draft"}
           </Button>
-          <Button variant="neutral" onClick={cancel} disabled={busy}>
+          <Button variant="neutral" onClick={cancel} disabled={busy} className={id ? "" : "col-span-2"}>
             Cancel
           </Button>
           {id && (
-            <Button variant="danger" onClick={remove} disabled={busy} className="ml-auto">
+            <Button variant="danger" onClick={remove} disabled={busy} className="sm:ml-auto">
               Delete
             </Button>
           )}
@@ -409,7 +443,7 @@ function FieldInput({ field, value, error, locked, onChange }: FieldProps) {
           />
           {field.label}
         </label>
-        {field.help && !error && <p className="ml-6 mt-1 text-[13px] text-ink-600">{field.help}</p>}
+        {field.help && !error && <p className="ml-6 mt-1 break-words text-[13px] text-ink-600">{field.help}</p>}
         {error && (
           <p id={`${id}-error`} className="ml-6 mt-1 text-[13px] font-semibold text-error">
             {error}
@@ -421,6 +455,7 @@ function FieldInput({ field, value, error, locked, onChange }: FieldProps) {
 
   let input;
   if (field.type === "image") input = <ImageInput id={id} value={text} onChange={onChange} invalid={Boolean(error)} />;
+  else if (field.type === "file") input = <PdfInput id={id} value={text} onChange={onChange} invalid={Boolean(error)} />;
   else if (field.type === "select")
     input = (
       <Dropdown
@@ -458,7 +493,7 @@ function FieldInput({ field, value, error, locked, onChange }: FieldProps) {
       </label>
       {input}
       {field.help && (
-        <p id={`${id}-help`} className="mt-1 text-[13px] text-ink-600">
+        <p id={`${id}-help`} className="mt-1 break-words text-[13px] text-ink-600">
           {field.help}
         </p>
       )}
@@ -551,6 +586,112 @@ function ImageInput({ id, value, onChange, invalid }: { id: string; value: strin
         )}
       </div>
       {error && <p className="mt-2 text-[13px] font-semibold text-error">{error}</p>}
+    </div>
+  );
+}
+
+/** A PDF: uploaded here (stored in the CMS), or a link to one somewhere else. */
+function PdfInput({ id, value, onChange, invalid }: { id: string; value: string; onChange: (v: string) => void; invalid: boolean }) {
+  const uploaded = value.startsWith("/files/cms/");
+  const [info, setInfo] = useState<{ name: string; size: number } | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
+  const [opening, setOpening] = useState(false);
+  const [error, setError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const busy = progress !== null;
+
+  useEffect(() => {
+    setInfo(null);
+    if (uploaded) pdfInfo(value).then(setInfo).catch(() => {});
+  }, [value, uploaded]);
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setError("");
+    setProgress(0);
+    try {
+      onChange(await uploadPdf(file, setProgress));
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+    setProgress(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  // Uploaded PDFs are only on the website after the next update, so open them from the CMS.
+  const open = async () => {
+    const tab = window.open("", "_blank");
+    setOpening(true);
+    try {
+      const url = await pdfUrl(value);
+      if (tab) tab.location.href = url;
+      else window.location.href = url;
+    } catch (err) {
+      tab?.close();
+      setError(errorMessage(err));
+    }
+    setOpening(false);
+  };
+
+  const sizeText = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
+
+  return (
+    <div className={`rounded-md border border-dashed p-3 ${invalid ? "border-error" : "border-ink-200"}`}>
+      {uploaded ? (
+        <div className="mb-3 flex items-center gap-3 rounded-md bg-maroon-50 px-3 py-2.5">
+          <FileText size={22} className="shrink-0 text-maroon-700" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-ink-900">{info?.name ?? "Uploaded PDF"}</span>
+            {info && <span className="block text-[13px] text-ink-600">{sizeText(info.size)}</span>}
+          </span>
+          <button type="button" onClick={open} disabled={opening} className="shrink-0 text-sm font-semibold text-maroon-700 hover:underline disabled:opacity-50">
+            {opening ? "Opening…" : "Open"}
+          </button>
+        </div>
+      ) : (
+        !value || value === "#" ? <p className="mb-3 text-sm text-ink-600">No PDF yet.</p> : null
+      )}
+
+      <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
+        <label htmlFor={id} className={`${buttonClass("secondary")} cursor-pointer ${busy ? "pointer-events-none opacity-50" : ""}`}>
+          {busy ? `Uploading… ${progress}%` : uploaded ? "Replace PDF" : "Upload PDF"}
+        </label>
+        <input
+          ref={fileRef}
+          id={id}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="sr-only"
+          disabled={busy}
+          onChange={(e) => pick(e.target.files?.[0])}
+        />
+        {value && value !== "#" && !busy && (
+          <Button variant="ghost" onClick={() => onChange("")}>
+            Remove
+          </Button>
+        )}
+      </div>
+      <p className="mt-1.5 text-[13px] text-ink-600">PDF only, up to {MAX_PDF_MB} MB.</p>
+
+      {!uploaded && (
+        <label className="mt-3 block border-t border-ink-200 pt-3 text-[13px] font-semibold text-ink-600">
+          Or paste a link to the PDF
+          <input
+            type="url"
+            inputMode="url"
+            placeholder="https://…"
+            value={value === "#" ? "" : value}
+            onChange={(e) => onChange(e.target.value.trim())}
+            disabled={busy}
+            className={`${inputClass} mt-1 font-normal`}
+          />
+        </label>
+      )}
+      {error && (
+        <p role="alert" className="mt-2 text-[13px] font-semibold text-error">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

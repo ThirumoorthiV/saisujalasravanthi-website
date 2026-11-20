@@ -152,6 +152,9 @@ export function EventCard({ event }: { event: TrustEvent }) {
   );
 }
 
+/** Details not yet confirmed by the Trust ("To be confirmed", "Pending confirmation") aren't shown. */
+const known = (text?: string) => Boolean(text) && !/pending|to be confirmed/i.test(text!);
+
 export function StatBlock({ metric, dark = false }: { metric: ImpactMetric; dark?: boolean }) {
   return (
     <div className={`flex h-full flex-col rounded-xl p-5 md:p-6 ${dark ? "bg-maroon-900" : "bg-maroon-700"} text-white`}>
@@ -161,8 +164,8 @@ export function StatBlock({ metric, dark = false }: { metric: ImpactMetric; dark
         {metric.suffix}
       </p>
       <p className="mt-2 text-lg font-semibold">{metric.label}</p>
-      <p className="mt-1 text-sm text-maroon-100">{metric.period}</p>
-      {!/pending/i.test(metric.asOf) && (
+      {known(metric.period) && <p className="mt-1 text-sm text-maroon-100">{metric.period}</p>}
+      {known(metric.asOf) && (
         <p className="mt-auto flex items-center gap-1 pt-3 text-xs text-maroon-100">
           <Calendar size={12} aria-hidden /> As of {metric.asOf}
         </p>
@@ -191,11 +194,13 @@ export function MetricDetail({ metric }: { metric: ImpactMetric }) {
           <dt className="sr-only">Definition</dt>
           <dd>{metric.definition}</dd>
         </div>
-        <div>
-          <dt className="inline font-semibold text-ink-900">Period: </dt>
-          <dd className="inline">{metric.period}</dd>
-        </div>
-        {!/pending/i.test(metric.asOf) && (
+        {known(metric.period) && (
+          <div>
+            <dt className="inline font-semibold text-ink-900">Period: </dt>
+            <dd className="inline">{metric.period}</dd>
+          </div>
+        )}
+        {known(metric.asOf) && (
           <div>
             <dt className="inline font-semibold text-ink-900">As of: </dt>
             <dd className="inline">{metric.asOf}</dd>

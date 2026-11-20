@@ -8,6 +8,7 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
+  FileText,
   Globe,
   HeartHandshake,
   History,
@@ -150,6 +151,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         ["/centres", "Our Network", MapPin],
         ["/partners", "Our Partners", Building2],
         ["/social", "Social media", Share2],
+        ["/reports", "Reports", FileText],
       ],
     },
     ...(staff.role === "admin"
